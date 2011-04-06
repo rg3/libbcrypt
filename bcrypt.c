@@ -9,65 +9,72 @@
 
 #define RANDBYTES (16)
 
+static int try_close(int fd)
+{
+	int ret;
+	for (;;) {
+		errno = 0;
+		ret = close(fd);
+		if (ret == -1 && errno == EINTR)
+			continue;
+		break;
+	}
+	return ret;
+}
+
+static int try_read(int fd, void *out, size_t count)
+{
+	size_t total;
+	ssize_t partial;
+
+	total = 0;
+	do {
+		for (;;) {
+			errno = 0;
+			partial = read(fd, out + total, count - total);
+			if (partial == -1 && errno == EINTR)
+				continue;
+			break;
+		}
+
+		if (partial < 1)
+			return partial;
+
+		total += partial;
+	} while (total < count);
+	return 0;
+}
+
 int bcrypt_gensalt(int factor, char salt[BCRYPT_HASHSIZE])
 {
-	int retval;
 	int fd;
-	int total;
-	ssize_t numbytes;
 	char input[RANDBYTES];
+	int workf;
 	char *aux;
 
 	fd = open("/dev/urandom", O_RDONLY);
 	if (fd == -1)
 		return 1;
 
-	total = 0;
-	do {
-		/* Read. */
-		for (;;) {
-			errno = 0;
-			numbytes = read(fd, input + total, RANDBYTES - total);
-			if (numbytes == -1 && errno == EINTR)
-				continue;
-			break;
-		}
-
-		/* Check. */
-		if (numbytes < 1) {
-			for (;;) {
-				errno = 0;
-				if (close(fd) == -1 && errno == EINTR)
-					continue;
-				break;
-			}
-			return 2;
-		}
-
-		total += numbytes;
-	} while (total < RANDBYTES);
-
-	/* Generate salt. */
-	aux = crypt_gensalt_rn("$2a$",
-			       (factor < 4 || factor > 31)?12:factor,
-			       input, RANDBYTES, salt, BCRYPT_HASHSIZE);
-
-	/* Check and close. */
-	retval = (aux == NULL)?3:0;
-	for (;;) {
-		errno = 0;
-		if (close(fd) == -1 && errno == EINTR)
-			continue;
-		break;
+	if (try_read(fd, salt, RANDBYTES) != 0) {
+		if (try_close(fd) != 0)
+			return 4;
+		return 2;
 	}
 
-	return retval;
+	if (try_close(fd) != 0)
+		return 3;
+
+	/* Generate salt. */
+	workf = (factor < 4 || factor > 31)?12:factor;
+	aux = crypt_gensalt_rn("$2a$", workf, input, RANDBYTES,
+			       salt, BCRYPT_HASHSIZE);
+	return (aux == NULL)?5:0;
 }
 
 int bcrypt_hashpw(const char *passwd, const char salt[BCRYPT_HASHSIZE], char hash[BCRYPT_HASHSIZE])
 {
 	char *aux;
-
 	aux = crypt_rn(passwd, salt, hash, BCRYPT_HASHSIZE);
 	return (aux == NULL)?1:0;
 }
