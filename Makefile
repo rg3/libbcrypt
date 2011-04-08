@@ -1,4 +1,4 @@
-CC = cc
+CC = gcc
 CFLAGS = -W -Wall -O2 -fomit-frame-pointer -funroll-loops
 
 all: bcrypt.a
