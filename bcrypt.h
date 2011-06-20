@@ -37,8 +37,8 @@ int bcrypt_hashpw(const char *passwd, const char salt[BCRYPT_HASHSIZE],
 		  char hash[BCRYPT_HASHSIZE]);
 
 /*
- * Brief HOWTO
- * -----------
+ * Brief Example
+ * -------------
  *
  * Hashing a password:
  *
