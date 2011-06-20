@@ -554,7 +554,7 @@ static void BF_set_key(__CONST char *key, BF_key expanded, BF_key initial)
 		tmp = 0;
 		for (j = 0; j < 4; j++) {
 			tmp <<= 8;
-			tmp |= *ptr;
+			tmp |= (unsigned char)*ptr;
 
 			if (!*ptr) ptr = key; else ptr++;
 		}
