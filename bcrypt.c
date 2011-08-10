@@ -56,7 +56,7 @@ int bcrypt_gensalt(int factor, char salt[BCRYPT_HASHSIZE])
 	if (fd == -1)
 		return 1;
 
-	if (try_read(fd, salt, RANDBYTES) != 0) {
+	if (try_read(fd, input, RANDBYTES) != 0) {
 		if (try_close(fd) != 0)
 			return 4;
 		return 2;
