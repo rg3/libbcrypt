@@ -1,9 +1,19 @@
-.\" Written by Solar Designer and placed in the public domain.
+.\" Written and revised by Solar Designer <solar at openwall.com> in 2000-2011.
+.\" No copyright is claimed, and this man page is hereby placed in the public
+.\" domain.  In case this attempt to disclaim copyright and place the man page
+.\" in the public domain is deemed null and void, then the man page is
+.\" Copyright (c) 2000-2011 Solar Designer and it is hereby released to the
+.\" general public under the following terms:
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted.
+.\"
+.\" There's ABSOLUTELY NO WARRANTY, express or implied.
 .\"
 .\" This manual page in its current form is intended for use on systems
 .\" based on the GNU C Library with crypt_blowfish patched into libcrypt.
 .\"
-.TH CRYPT 3 "22 February 2005" "Openwall Project" "Library functions"
+.TH CRYPT 3 "July 16, 2011" "Openwall Project" "Library functions"
 .ad l
 .\" No macros in NAME to keep makewhatis happy.
 .SH NAME
@@ -404,7 +414,7 @@ and the BSDI-style DES-based hashing offer a variable iteration count,
 may scale to even faster hardware, doesn't allow for certain optimizations
 specific to password cracking only, doesn't have the effective key size
 limitation, and uses 8-bit characters in passwords.
-.hash "$2a$" "\e$2a\e$[0-9]{2}\e$[./A-Za-z0-9]{53}" 72 8 "" 184 128 "2**4 to 2**99 (current implementations are limited to 2**31 iterations)"
+.hash "$2y$" "\e$2[axy]\e$[0-9]{2}\e$[./A-Za-z0-9]{53}" 72 8 "" 184 128 "2**4 to 2**99 (current implementations are limited to 2**31 iterations)"
 .PP
 With
 .BR bcrypt ,
@@ -413,6 +423,29 @@ the
 passed to
 .crypt_gensalt and
 is the base-2 logarithm of the actual iteration count.
+.PP
+.B bcrypt
+hashes used the "$2a$" prefix since 1997.
+However, in 2011 an implementation bug was discovered in crypt_blowfish
+(versions up to 1.0.4 inclusive) affecting handling of password characters with
+the 8th bit set.
+Besides fixing the bug,
+to provide for upgrade strategies for existing systems, two new prefixes were
+introduced: "$2x$", which fully re-introduces the bug, and "$2y$", which
+guarantees correct handling of both 7- and 8-bit characters (same as OpenBSD's
+"$2a$").
+Unfortunately, the behavior of "$2a$" on password characters with the 8th bit
+set has to be considered system-specific.
+When generating new password hashes, the "$2y$" prefix should be used.
+(If such hashes ever need to be migrated to a system that does not yet support
+this new prefix, the prefix in migrated copies of the already-generated hashes
+may be changed to "$2a$".)
+.PP
+.crypt_gensalt and
+support the "$2y$" and "$2a$" prefixes (the latter for legacy programs or
+configurations), but not "$2x$" (which must not be used for new hashes).
+.crypt and
+support all three of these prefixes.
 .SH PORTABILITY NOTES
 Programs using any of these functions on a glibc 2.x system must be
 linked against
