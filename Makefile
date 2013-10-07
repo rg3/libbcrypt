@@ -8,7 +8,7 @@ test: bcrypt.c crypt_blowfish/crypt_blowfish.a
 	$(CC) -o bcrypt_test bcrypt.o crypt_blowfish/crypt_blowfish.a
 
 bcrypt.a: bcrypt.o crypt_blowfish/crypt_blowfish.a
-	ar r bcrypt.a bcrypt.o crypt_blowfish/crypt_blowfish.a
+	ar r bcrypt.a bcrypt.o crypt_blowfish/*.o
 
 bcrypt.o: bcrypt.c
 	$(CC) $(CFLAGS) -c bcrypt.c
