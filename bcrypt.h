@@ -1,5 +1,4 @@
-#ifndef _BCRYPT_H_
-#define _BCRYPT_H_
+#pragma once
 
 #define BCRYPT_HASHSIZE	(64)
 
@@ -62,4 +61,6 @@ int bcrypt_hashpw(const char *passwd, const char salt[BCRYPT_HASHSIZE],
  *	}
  */
 
+#ifdef __cplusplus
+}
 #endif
