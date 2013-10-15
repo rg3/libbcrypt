@@ -2,6 +2,10 @@
 
 #define BCRYPT_HASHSIZE	(64)
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*
  * This function expects a work factor between 4 and 31 and a char array to
  * store the resulting generated salt. The char array should typically have
