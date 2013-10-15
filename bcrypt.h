@@ -13,15 +13,8 @@ extern "C" {
  * previous range, it will default to 12.
  *
  * The return value is zero if the salt could be correctly generated and
- * nonzero otherwise. Given that, internally, the code uses /dev/urandom to
- * read a few random bytes needed for the salt, the different return values are
- * as follow:
+ * nonzero otherwise.
  *
- *	1:	Unable to open /dev/urandom
- *	2:	Unable to read needed data.
- *	3:	Unable to close file descriptor.
- *	4:	Unable to read needed data and unable to close file descriptor.
- *	5:	Error generating salt.
  */
 int bcrypt_gensalt(int workfactor, char salt[BCRYPT_HASHSIZE]);
 
