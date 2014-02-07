@@ -1,5 +1,18 @@
 #ifndef BCRYPT_H_
 #define BCRYPT_H_
+/*
+ * bcrypt wrapper library
+ *
+ * Written in 2011, 2013, 2014 by Ricardo Garcia <public@rg3.name>
+ *
+ * To the extent possible under law, the author(s) have dedicated all copyright
+ * and related and neighboring rights to this software to the public domain
+ * worldwide. This software is distributed without any warranty. 
+ *
+ * You should have received a copy of the CC0 Public Domain Dedication along
+ * with this software. If not, see
+ * <http://creativecommons.org/publicdomain/zero/1.0/>. 
+ */
 
 #define BCRYPT_HASHSIZE	(64)
 
