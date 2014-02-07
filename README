@@ -8,5 +8,7 @@ The provided C interface is inspired in the bcrypt Python module that can be
 found at http://code.google.com/p/py-bcrypt/, and consists of a function to
 generate salts with the characteristic work factor parameter, and one to
 generate password hashes, which in turn is also used to verify passwords.
+Please check the header bcrypt.h. It contains the prototypes and lots of
+comments with examples.
 
 All this code is released to the public domain.
