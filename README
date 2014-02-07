@@ -11,4 +11,5 @@ generate password hashes, which in turn is also used to verify passwords.
 Please check the header bcrypt.h. It contains the prototypes and lots of
 comments with examples.
 
-All this code is released to the public domain.
+All this code is released to the public domain under the terms of CC0. See the
+COPYING file for the legal text.
