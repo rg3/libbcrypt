@@ -54,16 +54,21 @@ int bcrypt_hashpw(const char *passwd, const char salt[BCRYPT_HASHSIZE],
  *
  *	char salt[BCRYPT_HASHSIZE];
  *	char hash[BCRYPT_HASHSIZE];
+ *	int ret;
  *
- *	assert(bcrypt_gensalt(12, salt) == 0);
- *	assert(bcrypt_hashpw("thepassword", salt, hash) == 0);
+ *	ret = bcrypt_gensalt(12, salt);
+ *	assert(ret == 0);
+ *	ret = bcrypt_hashpw("thepassword", salt, hash);
+ *	assert(ret == 0);
  *
  *
  * Verifying a password:
  *
  *	char outhash[BCRYPT_HASHSIZE];
+ *	int ret;
  *
- *	assert(bcrypt_hashpw("thepassword", "expectedhash", outhash) == 0);
+ *	ret = bcrypt_hashpw("thepassword", "expectedhash", outhash);
+ *	assert(ret == 0);
  *
  *	if (strcmp("expectedhash", outhash) == 0) {
  *		printf("The password matches\n");
