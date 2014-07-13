@@ -92,7 +92,7 @@ int bcrypt_hashpw(const char *passwd, const char salt[BCRYPT_HASHSIZE], char has
 	return (aux == NULL)?1:0;
 }
 
-#ifdef _TEST_BCRYPT_
+#ifdef TEST_BCRYPT
 #include <assert.h>
 #include <stdio.h>
 #include <string.h>
