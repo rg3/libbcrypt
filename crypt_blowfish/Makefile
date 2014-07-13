@@ -40,9 +40,6 @@ EXTRA_MANS = \
 
 all: $(CRYPT_OBJS) man
 
-crypt_blowfish.a: $(CRYPT_OBJS)
-	ar r crypt_blowfish.a $(CRYPT_OBJS)
-
 check: crypt_test
 	./crypt_test
 
@@ -77,4 +74,4 @@ wrapper.o: crypt.h ow-crypt.h crypt_blowfish.h crypt_gensalt.h
 	$(AS) $(ASFLAGS) $*.S
 
 clean:
-	$(RM) crypt_test crypt_test_threads *.o *.a $(EXTRA_MANS) core
+	$(RM) crypt_test crypt_test_threads *.o $(EXTRA_MANS) core
