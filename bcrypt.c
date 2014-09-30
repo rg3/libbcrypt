@@ -35,7 +35,7 @@ static int try_close(int fd)
 	return ret;
 }
 
-static int try_read(int fd, void *out, size_t count)
+static int try_read(int fd, char *out, size_t count)
 {
 	size_t total;
 	ssize_t partial;
