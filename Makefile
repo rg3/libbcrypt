@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -W -Wall -O2 -fomit-frame-pointer -funroll-loops
+CFLAGS = $(shell grep '^CFLAGS = ' crypt_blowfish/Makefile | cut -d= -f2-)
 .PHONY: crypt_blowfish
 
 all: bcrypt.a
