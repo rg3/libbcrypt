@@ -41,7 +41,8 @@ static int try_read(int fd, char *out, size_t count)
 	ssize_t partial;
 
 	total = 0;
-	do {
+	while (total < count)
+	{
 		for (;;) {
 			errno = 0;
 			partial = read(fd, out + total, count - total);
@@ -51,10 +52,11 @@ static int try_read(int fd, char *out, size_t count)
 		}
 
 		if (partial < 1)
-			return partial;
+			return -1;
 
 		total += partial;
-	} while (total < count);
+	}
+
 	return 0;
 }
 
