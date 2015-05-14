@@ -46,6 +46,12 @@ int bcrypt_gensalt(int workfactor, char salt[BCRYPT_HASHSIZE]);
 int bcrypt_hashpw(const char *passwd, const char salt[BCRYPT_HASHSIZE],
 		  char hash[BCRYPT_HASHSIZE]);
 
+/*
+ * This function expects a password and a hash to verify the password against.
+ *
+ * The return value is zero if the password verification failed and one
+ * otherwise.
+ */
 int bcrypt_verify(const char *passwd, const char hash[BCRYPT_HASHSIZE]);
 
 /*
