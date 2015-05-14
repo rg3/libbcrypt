@@ -7,11 +7,11 @@
  *
  * To the extent possible under law, the author(s) have dedicated all copyright
  * and related and neighboring rights to this software to the public domain
- * worldwide. This software is distributed without any warranty. 
+ * worldwide. This software is distributed without any warranty.
  *
  * You should have received a copy of the CC0 Public Domain Dedication along
  * with this software. If not, see
- * <http://creativecommons.org/publicdomain/zero/1.0/>. 
+ * <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 
 #define BCRYPT_HASHSIZE	(64)
@@ -46,6 +46,8 @@ int bcrypt_gensalt(int workfactor, char salt[BCRYPT_HASHSIZE]);
 int bcrypt_hashpw(const char *passwd, const char salt[BCRYPT_HASHSIZE],
 		  char hash[BCRYPT_HASHSIZE]);
 
+int bcrypt_verify(const char *passwd, const char hash[BCRYPT_HASHSIZE]);
+
 /*
  * Brief Example
  * -------------
@@ -75,6 +77,15 @@ int bcrypt_hashpw(const char *passwd, const char salt[BCRYPT_HASHSIZE],
  *	} else {
  *		printf("The password does NOT match\n");
  *	}
+ *
+ *  OR
+ *
+ *	if (bcrypt_verify("thepassword", "hash")) {
+ *		printf("The password matches\n");
+ *	} else {
+ *		printf("The password does NOT match\n");
+ *	}
+ *
  *
  * IMPORTANT NOTE: using strcmp or memcmp like in this simple example may make
  * your code vulnerable to timing attacks[1]. If possible, use a function that

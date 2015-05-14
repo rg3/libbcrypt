@@ -5,12 +5,13 @@
  *
  * To the extent possible under law, the author(s) have dedicated all copyright
  * and related and neighboring rights to this software to the public domain
- * worldwide. This software is distributed without any warranty. 
+ * worldwide. This software is distributed without any warranty.
  *
  * You should have received a copy of the CC0 Public Domain Dedication along
  * with this software. If not, see
- * <http://creativecommons.org/publicdomain/zero/1.0/>. 
+ * <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
+#include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -94,6 +95,20 @@ int bcrypt_hashpw(const char *passwd, const char salt[BCRYPT_HASHSIZE], char has
 	return (aux == NULL)?1:0;
 }
 
+int bcrypt_verify(const char *passwd, const char hashed[BCRYPT_HASHSIZE])
+{
+	int ret;
+	char outhash[BCRYPT_HASHSIZE];
+
+	ret = bcrypt_hashpw(passwd, hashed, outhash);
+	if (ret == 0 && strcmp(hashed, outhash) == 0)
+	{
+		return 1;
+	}
+
+	return 0;
+}
+
 #ifdef TEST_BCRYPT
 #include <assert.h>
 #include <stdio.h>
@@ -129,6 +144,9 @@ int main()
 	ret = bcrypt_hashpw(pass, hash2, hash);
 	assert(ret == 0);
 	printf("Second hash check: %s\n", (strcmp(hash2, hash) == 0)?"OK":"FAIL");
+
+	printf("First hash check w/ bcrypt_verify: %s\n", (bcrypt_verify(pass, hash))?"OK":"FAIL");
+	printf("Second hash check w/ bcrypt_verify: %s\n", (bcrypt_verify(pass, hash2))?"OK":"FAIL");
 
 	return 0;
 }
