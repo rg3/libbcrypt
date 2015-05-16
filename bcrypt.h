@@ -34,11 +34,13 @@ int bcrypt_gensalt(int workfactor, char salt[BCRYPT_HASHSIZE]);
 
 /*
  * This function expects a password to be hashed, a salt to hash the password
- * with and a char array to leave the result. It can also be used to verify a
- * hashed password. In that case, provide the expected hash in the salt
- * parameter and verify the output hash is the same as the input hash. Both the
- * salt and the hash parameters should have room for BCRYPT_HASHSIZE characters
- * at least.
+ * with and a char array to leave the result. Both the salt and the hash
+ * parameters should have room for BCRYPT_HASHSIZE characters at least.
+ *
+ * It can also be used to verify a hashed password. In that case, provide the
+ * expected hash in the salt parameter and verify the output hash is the same
+ * as the input hash. However, to avoid timing attacks, it's better to use
+ * bcrypt_checkpw when verifying a password.
  *
  * The return value is zero if the password could be hashed and nonzero
  * otherwise.
