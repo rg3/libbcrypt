@@ -62,20 +62,36 @@ static int try_read(int fd, char *out, size_t count)
 }
 
 /*
-* Time taken only varies with the length of str1. Because user input is hashed
-* with bcrypt_hashpw(passwd, hashed, outhash) beforehand and the length of
-* hashed is constant the time taken to execute this function will be constant.
+ * This is a best effort implementation. Nothing prevents a compiler from
+ * optimizing this function and making it vulnerable to timing attacks, but
+ * this method is commonly used in crypto libraries like NaCl.
+ *
+ * Return value is zero if both strings are equal and nonzero otherwise.
 */
 static int timing_safe_strcmp(const char *str1, const char *str2)
 {
-	int i, str1len, str2len, rv = 0;
-	str1len = strlen(str1);
-	str2len = strlen(str2);
-	for (i = 0; i < str1len; i++) {
-		rv |= str1[i] ^ str2[i];
-	}
-	rv |= str1len ^ str2len; // lengths must match
-	return rv;
+	const unsigned char *u1;
+	const unsigned char *u2;
+	int ret;
+	int i;
+
+	int len1 = strlen(str1);
+	int len2 = strlen(str2);
+
+	/* In our context both strings should always have the same length
+	 * because they will be hashed passwords. */
+	if (len1 != len2)
+		return 1;
+
+	/* Force unsigned for bitwise operations. */
+	u1 = (const unsigned char *)str1;
+	u2 = (const unsigned char *)str2;
+
+	ret = 0;
+	for (i = 0; i < len1; ++i)
+		ret |= (u1[i] ^ u2[i]);
+
+	return ret;
 }
 
 int bcrypt_gensalt(int factor, char salt[BCRYPT_HASHSIZE])
