@@ -48,6 +48,7 @@ int bcrypt_hashpw(const char *passwd, const char salt[BCRYPT_HASHSIZE],
 
 /*
  * This function expects a password and a hash to verify the password against.
+ * String comparisons in this function are constant time.
  *
  * The return value is zero if the password verification failed and nonzero
  * otherwise.

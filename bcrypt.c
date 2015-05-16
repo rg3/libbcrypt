@@ -61,6 +61,23 @@ static int try_read(int fd, char *out, size_t count)
 	return 0;
 }
 
+/*
+* Time taken only varies with the length of str1. Because user input is hashed
+* with bcrypt_hashpw(passwd, hashed, outhash) beforehand and the length of
+* hashed is constant the time taken to execute this function will be constant.
+*/
+static int timing_safe_strcmp(const char *str1, const char *str2)
+{
+	int i, str1len, str2len, rv = 0;
+	str1len = strlen(str1);
+	str2len = strlen(str2);
+	for (i = 0; i < str1len; i++) {
+		rv |= str1[i] ^ str2[i];
+	}
+	rv |= str1len ^ str2len; // lengths must match
+	return rv;
+}
+
 int bcrypt_gensalt(int factor, char salt[BCRYPT_HASHSIZE])
 {
 	int fd;
@@ -101,7 +118,7 @@ int bcrypt_checkpw(const char *passwd, const char hashed[BCRYPT_HASHSIZE])
 	char outhash[BCRYPT_HASHSIZE];
 
 	ret = bcrypt_hashpw(passwd, hashed, outhash);
-	if (ret == 0 && strcmp(hashed, outhash) == 0)
+	if (ret == 0 && timing_safe_strcmp(hashed, outhash) == 0)
 	{
 		return 1;
 	}
@@ -145,8 +162,17 @@ int main()
 	assert(ret == 0);
 	printf("Second hash check: %s\n", (strcmp(hash2, hash) == 0)?"OK":"FAIL");
 
-	printf("First hash check w/ bcrypt_checkpw: %s\n", (bcrypt_checkpw(pass, hash))?"OK":"FAIL");
+	before = clock();
+	printf("First hash check w/ bcrypt_checkpw: %s\n", (bcrypt_checkpw(pass, hash1))?"OK":"FAIL");
+	after = clock();
+	printf("Time taken: %f seconds\n",
+	       (float)(after - before) / CLOCKS_PER_SEC);
+
+	before = clock();
 	printf("Second hash check w/ bcrypt_checkpw: %s\n", (bcrypt_checkpw(pass, hash2))?"OK":"FAIL");
+	after = clock();
+	printf("Time taken: %f seconds\n",
+	       (float)(after - before) / CLOCKS_PER_SEC);
 
 	return 0;
 }
