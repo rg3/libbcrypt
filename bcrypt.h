@@ -49,10 +49,10 @@ int bcrypt_hashpw(const char *passwd, const char salt[BCRYPT_HASHSIZE],
 /*
  * This function expects a password and a hash to verify the password against.
  *
- * The return value is zero if the password verification failed and one
+ * The return value is zero if the password verification failed and nonzero
  * otherwise.
  */
-int bcrypt_verify(const char *passwd, const char hash[BCRYPT_HASHSIZE]);
+int bcrypt_checkpw(const char *passwd, const char hash[BCRYPT_HASHSIZE]);
 
 /*
  * Brief Example
@@ -84,9 +84,9 @@ int bcrypt_verify(const char *passwd, const char hash[BCRYPT_HASHSIZE]);
  *		printf("The password does NOT match\n");
  *	}
  *
- *  OR
+ *  or
  *
- *	if (bcrypt_verify("thepassword", "hash")) {
+ *	if (bcrypt_checkpw("thepassword", "hash")) {
  *		printf("The password matches\n");
  *	} else {
  *		printf("The password does NOT match\n");

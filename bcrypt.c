@@ -95,7 +95,7 @@ int bcrypt_hashpw(const char *passwd, const char salt[BCRYPT_HASHSIZE], char has
 	return (aux == NULL)?1:0;
 }
 
-int bcrypt_verify(const char *passwd, const char hashed[BCRYPT_HASHSIZE])
+int bcrypt_checkpw(const char *passwd, const char hashed[BCRYPT_HASHSIZE])
 {
 	int ret;
 	char outhash[BCRYPT_HASHSIZE];
@@ -145,8 +145,8 @@ int main()
 	assert(ret == 0);
 	printf("Second hash check: %s\n", (strcmp(hash2, hash) == 0)?"OK":"FAIL");
 
-	printf("First hash check w/ bcrypt_verify: %s\n", (bcrypt_verify(pass, hash))?"OK":"FAIL");
-	printf("Second hash check w/ bcrypt_verify: %s\n", (bcrypt_verify(pass, hash2))?"OK":"FAIL");
+	printf("First hash check w/ bcrypt_checkpw: %s\n", (bcrypt_checkpw(pass, hash))?"OK":"FAIL");
+	printf("Second hash check w/ bcrypt_checkpw: %s\n", (bcrypt_checkpw(pass, hash2))?"OK":"FAIL");
 
 	return 0;
 }
