@@ -128,18 +128,16 @@ int bcrypt_hashpw(const char *passwd, const char salt[BCRYPT_HASHSIZE], char has
 	return (aux == NULL)?1:0;
 }
 
-int bcrypt_checkpw(const char *passwd, const char hashed[BCRYPT_HASHSIZE])
+int bcrypt_checkpw(const char *passwd, const char hash[BCRYPT_HASHSIZE])
 {
 	int ret;
 	char outhash[BCRYPT_HASHSIZE];
 
-	ret = bcrypt_hashpw(passwd, hashed, outhash);
-	if (ret == 0 && timing_safe_strcmp(hashed, outhash) == 0)
-	{
-		return 1;
-	}
+	ret = bcrypt_hashpw(passwd, hash, outhash);
+	if (ret != 0)
+		return -1;
 
-	return 0;
+	return timing_safe_strcmp(hash, outhash);
 }
 
 #ifdef TEST_BCRYPT
@@ -148,7 +146,7 @@ int bcrypt_checkpw(const char *passwd, const char hashed[BCRYPT_HASHSIZE])
 #include <string.h>
 #include <time.h>
 
-int main()
+int main(void)
 {
 	clock_t before;
 	clock_t after;
@@ -169,7 +167,7 @@ int main()
 	after = clock();
 	printf("Hashed password: %s\n", hash);
 	printf("Time taken: %f seconds\n",
-	       (float)(after - before) / CLOCKS_PER_SEC);
+	       (double)(after - before) / CLOCKS_PER_SEC);
 
 	ret = bcrypt_hashpw(pass, hash1, hash);
 	assert(ret == 0);
@@ -179,16 +177,18 @@ int main()
 	printf("Second hash check: %s\n", (strcmp(hash2, hash) == 0)?"OK":"FAIL");
 
 	before = clock();
-	printf("First hash check w/ bcrypt_checkpw: %s\n", (bcrypt_checkpw(pass, hash1))?"OK":"FAIL");
+	ret = (bcrypt_checkpw(pass, hash1) == 0);
 	after = clock();
+	printf("First hash check with bcrypt_checkpw: %s\n", ret?"OK":"FAIL");
 	printf("Time taken: %f seconds\n",
-	       (float)(after - before) / CLOCKS_PER_SEC);
+	       (double)(after - before) / CLOCKS_PER_SEC);
 
 	before = clock();
-	printf("Second hash check w/ bcrypt_checkpw: %s\n", (bcrypt_checkpw(pass, hash2))?"OK":"FAIL");
+	ret = (bcrypt_checkpw(pass, hash2) == 0);
 	after = clock();
+	printf("Second hash check with bcrypt_checkpw: %s\n", ret?"OK":"FAIL");
 	printf("Time taken: %f seconds\n",
-	       (float)(after - before) / CLOCKS_PER_SEC);
+	       (double)(after - before) / CLOCKS_PER_SEC);
 
 	return 0;
 }

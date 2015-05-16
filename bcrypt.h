@@ -48,10 +48,12 @@ int bcrypt_hashpw(const char *passwd, const char salt[BCRYPT_HASHSIZE],
 
 /*
  * This function expects a password and a hash to verify the password against.
- * String comparisons in this function are constant time.
+ * The internal implementation is tuned to avoid timing attacks.
  *
- * The return value is zero if the password verification failed and nonzero
- * otherwise.
+ * The return value will be -1 in case of errors, zero if the provided password
+ * matches the given hash and greater than zero if no errors are found and the
+ * passwords don't match.
+ *
  */
 int bcrypt_checkpw(const char *passwd, const char hash[BCRYPT_HASHSIZE]);
 
@@ -76,29 +78,14 @@ int bcrypt_checkpw(const char *passwd, const char hash[BCRYPT_HASHSIZE]);
  *	char outhash[BCRYPT_HASHSIZE];
  *	int ret;
  *
- *	ret = bcrypt_hashpw("thepassword", "expectedhash", outhash);
- *	assert(ret == 0);
+ *      ret = bcrypt_checkpw("thepassword", "expectedhash");
+ *      assert(ret != -1);
  *
- *	if (strcmp("expectedhash", outhash) == 0) {
+ *	if (ret == 0) {
  *		printf("The password matches\n");
  *	} else {
  *		printf("The password does NOT match\n");
  *	}
- *
- *  or
- *
- *	if (bcrypt_checkpw("thepassword", "hash")) {
- *		printf("The password matches\n");
- *	} else {
- *		printf("The password does NOT match\n");
- *	}
- *
- *
- * IMPORTANT NOTE: using strcmp or memcmp like in this simple example may make
- * your code vulnerable to timing attacks[1]. If possible, use a function that
- * always compares all the characters in the string before returning.
- *
- * [1] https://en.wikipedia.org/wiki/Timing_attack
  *
  */
 
