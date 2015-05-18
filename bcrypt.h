@@ -77,7 +77,6 @@ int bcrypt_checkpw(const char *passwd, const char hash[BCRYPT_HASHSIZE]);
  *
  * Verifying a password:
  *
- *	char outhash[BCRYPT_HASHSIZE];
  *	int ret;
  *
  *      ret = bcrypt_checkpw("thepassword", "expectedhash");
