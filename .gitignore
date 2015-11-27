@@ -1,3 +1,5 @@
+# Build files
+
 bcrypt.a
 bcrypt.o
 crypt_blowfish/crypt_blowfish.o
@@ -10,3 +12,6 @@ crypt_blowfish/crypt_ra.3
 crypt_blowfish/crypt_rn.3
 crypt_blowfish/wrapper.o
 crypt_blowfish/x86.o
+
+# Mac OS X
+.DS_Store
