@@ -16,6 +16,7 @@ COPYING file for the legal text.
 Installing:
   mkdir build && cd build
   cmake ..
+  make
   make test
   make install
   

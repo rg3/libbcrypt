@@ -11,9 +11,10 @@ file(GLOB bcrypt_src
     bcrypt/crypt_blowfish/*.c
 )
 add_library(bcrypt STATIC ${bcrypt_src})
+target_compile_options(bcrypt PUBLIC "-fPIC")
 
 add_executable(bcrypt_test bcrypt/bcrypt.c)
-target_compile_options(bcrypt_test PUBLIC "-DTEST_BCRYPT")
+target_compile_options(bcrypt_test PUBLIC "-DTEST_BCRYPT -fPIC")
 target_link_libraries(bcrypt_test bcrypt)
 
 enable_testing()
