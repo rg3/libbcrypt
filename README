@@ -12,3 +12,10 @@ header bcrypt.h. It contains the prototypes and lots of comments with examples.
 
 All this code is released to the public domain under the terms of CC0. See the
 COPYING file for the legal text.
+
+Installing:
+  mkdir build && cd build
+  cmake ..
+  make test
+  make install
+  
