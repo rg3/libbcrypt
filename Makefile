@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = $(shell grep '^CFLAGS = ' crypt_blowfish/Makefile | cut -d= -f2-)
+CFLAGS = $(shell grep '^CFLAGS = ' crypt_blowfish/Makefile | cut -d= -f2-) -fPIC -fvisibility=hidden
 .PHONY: crypt_blowfish
 
 all: bcrypt.a
@@ -15,7 +15,7 @@ bcrypt.o: bcrypt.c
 	$(CC) $(CFLAGS) -c bcrypt.c
 
 crypt_blowfish:
-	$(MAKE) -C crypt_blowfish
+	$(MAKE) CFLAGS="$(CFLAGS)" -C crypt_blowfish
 
 clean:
 	rm -f *.o bcrypt_test bcrypt.a *~ core

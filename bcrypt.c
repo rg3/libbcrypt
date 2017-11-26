@@ -18,6 +18,7 @@
 #include "crypt_blowfish/ow-crypt.h"
 
 #define RANDBYTES (16)
+#define BCRYPT_API __attribute__ ((visibility ("default")))
 
 /*
  * This is a best effort implementation. Nothing prevents a compiler from
@@ -52,7 +53,7 @@ static int timing_safe_strcmp(const char *str1, const char *str2)
 	return ret;
 }
 
-int bcrypt_gensalt(int factor, char salt[BCRYPT_HASHSIZE])
+BCRYPT_API int bcrypt_gensalt(int factor, char salt[BCRYPT_HASHSIZE])
 {
 	int ret;
 	char input[RANDBYTES];
@@ -71,14 +72,14 @@ int bcrypt_gensalt(int factor, char salt[BCRYPT_HASHSIZE])
 	return (aux == NULL)?2:0;
 }
 
-int bcrypt_hashpw(const char *passwd, const char salt[BCRYPT_HASHSIZE], char hash[BCRYPT_HASHSIZE])
+BCRYPT_API int bcrypt_hashpw(const char *passwd, const char salt[BCRYPT_HASHSIZE], char hash[BCRYPT_HASHSIZE])
 {
 	char *aux;
 	aux = crypt_rn(passwd, salt, hash, BCRYPT_HASHSIZE);
 	return (aux == NULL)?1:0;
 }
 
-int bcrypt_checkpw(const char *passwd, const char hash[BCRYPT_HASHSIZE])
+BCRYPT_API int bcrypt_checkpw(const char *passwd, const char hash[BCRYPT_HASHSIZE])
 {
 	int ret;
 	char outhash[BCRYPT_HASHSIZE];
