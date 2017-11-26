@@ -8,6 +8,7 @@ int main(void)
 {
 	clock_t before;
 	clock_t after;
+	double elapsed;
 	char salt[BCRYPT_HASHSIZE];
 	char hash[BCRYPT_HASHSIZE];
 	int ret;
@@ -19,34 +20,38 @@ int main(void)
 	ret = bcrypt_gensalt(BCRYPT_DEFAULT_WORK_FACTOR, salt);
 	assert(ret == 0);
 	printf("Generated salt: %s\n", salt);
+
 	before = clock();
 	ret = bcrypt_hashpw("test", salt, hash);
 	after = clock();
 	assert(ret == 0);
 	printf("Hashed password: %s\n", hash);
-	printf("Time taken: %f seconds\n",
-	       (double)(after - before) / CLOCKS_PER_SEC);
+	elapsed = (double)(after - before) / CLOCKS_PER_SEC;
+	printf("Time taken: %f seconds\n", elapsed);
+
+	if (elapsed < 0.050)
+		printf("WARNING: the default work factor (%d) "
+			"may be too small for your system\n",
+			BCRYPT_DEFAULT_WORK_FACTOR);
+	else if (elapsed > 1.0)
+		printf("WARNING: the default work factor (%d) "
+			"may be too big for your system\n",
+			BCRYPT_DEFAULT_WORK_FACTOR);
 
 	ret = bcrypt_hashpw(pass, hash1, hash);
 	assert(ret == 0);
-	printf("First hash check: %s\n", (strcmp(hash1, hash) == 0)?"OK":"FAIL");
+	assert(strcmp(hash1, hash) == 0);
+
 	ret = bcrypt_hashpw(pass, hash2, hash);
 	assert(ret == 0);
-	printf("Second hash check: %s\n", (strcmp(hash2, hash) == 0)?"OK":"FAIL");
+	assert(strcmp(hash2, hash) == 0);
 
-	before = clock();
-	ret = (bcrypt_checkpw(pass, hash1) == 0);
-	after = clock();
-	printf("First hash check with bcrypt_checkpw: %s\n", ret?"OK":"FAIL");
-	printf("Time taken: %f seconds\n",
-	       (double)(after - before) / CLOCKS_PER_SEC);
+	ret = bcrypt_checkpw(pass, hash1);
+	assert(ret == 0);
 
-	before = clock();
-	ret = (bcrypt_checkpw(pass, hash2) == 0);
-	after = clock();
-	printf("Second hash check with bcrypt_checkpw: %s\n", ret?"OK":"FAIL");
-	printf("Time taken: %f seconds\n",
-	       (double)(after - before) / CLOCKS_PER_SEC);
+	ret = bcrypt_checkpw(pass, hash2);
+	assert(ret == 0);
 
+	printf("All tests passed\n");
 	return 0;
 }
