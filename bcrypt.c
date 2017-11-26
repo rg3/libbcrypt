@@ -1,7 +1,7 @@
 /*
  * bcrypt wrapper library
  *
- * Written in 2011, 2013, 2014, 2015 by Ricardo Garcia <r@rg3.name>
+ * Written in 2011, 2013, 2014, 2015, 2017 by Ricardo Garcia <r@rg3.name>
  *
  * To the extent possible under law, the author(s) have dedicated all copyright
  * and related and neighboring rights to this software to the public domain
@@ -12,54 +12,12 @@
  * <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 #include <string.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
 #include <unistd.h>
-#include <errno.h>
 
 #include "bcrypt.h"
 #include "crypt_blowfish/ow-crypt.h"
 
 #define RANDBYTES (16)
-
-static int try_close(int fd)
-{
-	int ret;
-	for (;;) {
-		errno = 0;
-		ret = close(fd);
-		if (ret == -1 && errno == EINTR)
-			continue;
-		break;
-	}
-	return ret;
-}
-
-static int try_read(int fd, char *out, size_t count)
-{
-	size_t total;
-	ssize_t partial;
-
-	total = 0;
-	while (total < count)
-	{
-		for (;;) {
-			errno = 0;
-			partial = read(fd, out + total, count - total);
-			if (partial == -1 && errno == EINTR)
-				continue;
-			break;
-		}
-
-		if (partial < 1)
-			return -1;
-
-		total += partial;
-	}
-
-	return 0;
-}
 
 /*
  * This is a best effort implementation. Nothing prevents a compiler from
@@ -96,29 +54,21 @@ static int timing_safe_strcmp(const char *str1, const char *str2)
 
 int bcrypt_gensalt(int factor, char salt[BCRYPT_HASHSIZE])
 {
-	int fd;
+	int ret;
 	char input[RANDBYTES];
 	int workf;
 	char *aux;
 
-	fd = open("/dev/urandom", O_RDONLY);
-	if (fd == -1)
-		return 1;
-
-	if (try_read(fd, input, RANDBYTES) != 0) {
-		if (try_close(fd) != 0)
-			return 4;
-		return 2;
-	}
-
-	if (try_close(fd) != 0)
-		return 3;
+	/* Get random bytes. */
+	ret = getentropy(input, sizeof(input));
+	if (ret != 0)
+	    return 1;
 
 	/* Generate salt. */
 	workf = (factor < 4 || factor > 31)?12:factor;
 	aux = crypt_gensalt_rn("$2a$", workf, input, RANDBYTES,
 			       salt, BCRYPT_HASHSIZE);
-	return (aux == NULL)?5:0;
+	return (aux == NULL)?2:0;
 }
 
 int bcrypt_hashpw(const char *passwd, const char salt[BCRYPT_HASHSIZE], char hash[BCRYPT_HASHSIZE])
