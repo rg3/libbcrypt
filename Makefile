@@ -25,7 +25,7 @@ $(BCRYPT_SONAME): $(BCRYPT_SOFILE)
 $(BCRYPT_SOFILE): bcrypt.o crypt_blowfish
 	$(CC) -shared -Wl,-soname,$(BCRYPT_SONAME) -o $(BCRYPT_SOFILE) bcrypt.o crypt_blowfish/*.o
 
-%.o: %.c
+%.o: %.c bcrypt.h
 	$(CC) $(CFLAGS) -c $<
 
 .PHONY: crypt_blowfish
