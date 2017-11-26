@@ -15,6 +15,7 @@
  */
 
 #define BCRYPT_HASHSIZE	(64)
+#define BCRYPT_DEFAULT_WORK_FACTOR (12)
 
 #ifdef __cplusplus
 extern "C" {
@@ -24,7 +25,7 @@ extern "C" {
  * This function expects a work factor between 4 and 31 and a char array to
  * store the resulting generated salt. The char array should typically have
  * BCRYPT_HASHSIZE bytes at least. If the provided work factor is not in the
- * previous range, it will default to 12.
+ * previous range, it will default to BCRYPT_DEFAULT_WORK_FACTOR.
  *
  * The return value is zero if the salt could be correctly generated and
  * nonzero otherwise.
@@ -69,7 +70,7 @@ int bcrypt_checkpw(const char *passwd, const char hash[BCRYPT_HASHSIZE]);
  *	char hash[BCRYPT_HASHSIZE];
  *	int ret;
  *
- *	ret = bcrypt_gensalt(12, salt);
+ *	ret = bcrypt_gensalt(BCRYPT_DEFAULT_WORK_FACTOR, salt);
  *	assert(ret == 0);
  *	ret = bcrypt_hashpw("thepassword", salt, hash);
  *	assert(ret == 0);

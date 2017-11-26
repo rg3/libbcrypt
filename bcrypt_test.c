@@ -16,7 +16,7 @@ int main(void)
 	const char hash1[] = "$2a$10$VEVmGHy4F4XQMJ3eOZJAUeb.MedU0W10pTPCuf53eHdKJPiSE8sMK";
 	const char hash2[] = "$2a$10$3F0BVk5t8/aoS.3ddaB3l.fxg5qvafQ9NybxcpXLzMeAt.nVWn.NO";
 
-	ret = bcrypt_gensalt(12, salt);
+	ret = bcrypt_gensalt(BCRYPT_DEFAULT_WORK_FACTOR, salt);
 	assert(ret == 0);
 	printf("Generated salt: %s\n", salt);
 	before = clock();
