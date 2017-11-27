@@ -11,19 +11,25 @@ BCRYPT_LDNAME = lib$(BCRYPT_PRNAME).so
 BCRYPT_SONAME = $(BCRYPT_LDNAME).$(BCRYPT_MAJOR)
 BCRYPT_SOFILE = $(BCRYPT_SONAME).$(BCRYPT_MINOR).$(BCRYPT_PATCH)
 
-all: $(BCRYPT_SONAME)
+define make_links
+set -e ; \
+    ln -sf $(BCRYPT_SOFILE) $(1)/$(BCRYPT_SONAME) ; \
+    ln -sf $(BCRYPT_SONAME) $(1)/$(BCRYPT_LDNAME)
+endef
+
+all: $(BCRYPT_SOFILE)
 
 test: bcrypt_test
 	@set -e ; \
 	    for prog in $^; do \
-		LD_LIBRARY_PATH=. ./$$prog ; \
+	        LD_LIBRARY_PATH=.:$$LD_LIBRARY_PATH ./$$prog ; \
 	    done
 
-bcrypt_test: $(BCRYPT_SONAME) bcrypt_test.o
-	$(CC) -o $@ $^
+bcrypt_test: bcrypt_test.o $(BCRYPT_LDNAME)
+	$(CC) -o $@ $< -L. -l$(BCRYPT_PRNAME)
 
-$(BCRYPT_SONAME): $(BCRYPT_SOFILE)
-	ln -sf $^ $@
+$(BCRYPT_LDNAME) $(BCRYPT_SONAME): $(BCRYPT_SOFILE)
+	$(call make_links,.)
 
 $(BCRYPT_SOFILE): bcrypt.o crypt_blowfish
 	$(CC) $(EXTRA_CFLAGS) -shared -Wl,-soname,$(BCRYPT_SONAME) -o $(BCRYPT_SOFILE) bcrypt.o crypt_blowfish/*.o
@@ -36,5 +42,5 @@ crypt_blowfish:
 	$(MAKE) CFLAGS="$(CFLAGS)" -C crypt_blowfish
 
 clean:
-	rm -f *.o bcrypt_test $(BCRYPT_SOFILE) $(BCRYPT_SONAME) *~ core
+	rm -f *.o bcrypt_test $(BCRYPT_SOFILE) $(BCRYPT_SONAME) $(BCRYPT_LDNAME) *~ core
 	$(MAKE) -C crypt_blowfish clean
