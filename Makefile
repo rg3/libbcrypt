@@ -1,5 +1,6 @@
 CC = gcc
-CFLAGS = $(shell grep '^CFLAGS = ' crypt_blowfish/Makefile | cut -d= -f2-) -fPIC -fvisibility=hidden
+EXTRA_CFLAGS = -fPIC -fvisibility=hidden
+CFLAGS = $(shell grep '^CFLAGS = ' crypt_blowfish/Makefile | cut -d= -f2-) $(EXTRA_CFLAGS)
 
 BCRYPT_MAJOR = 1
 BCRYPT_MINOR = 0
@@ -23,7 +24,7 @@ $(BCRYPT_SONAME): $(BCRYPT_SOFILE)
 	ln -sf $^ $@
 
 $(BCRYPT_SOFILE): bcrypt.o crypt_blowfish
-	$(CC) -shared -Wl,-soname,$(BCRYPT_SONAME) -o $(BCRYPT_SOFILE) bcrypt.o crypt_blowfish/*.o
+	$(CC) $(EXTRA_CFLAGS) -shared -Wl,-soname,$(BCRYPT_SONAME) -o $(BCRYPT_SOFILE) bcrypt.o crypt_blowfish/*.o
 
 %.o: %.c bcrypt.h
 	$(CC) $(CFLAGS) -c $<
