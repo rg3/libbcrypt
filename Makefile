@@ -5,9 +5,12 @@ CRYPT_BLOWFISH_OBJ = $(patsubst %.c,%.o,$(patsubst %.S,%.o,$(CRYPT_BLOWFISH_SRC)
 
 # Compiler.
 CC = $(shell grep '^CC = ' $(CRYPT_BLOWFISH_DIR)/Makefile | cut -d= -f2-)
+
+# Compiler flags.
 EXTRA_CFLAGS = -fPIC -fvisibility=hidden
 CFLAGS = $(shell grep '^CFLAGS = ' $(CRYPT_BLOWFISH_DIR)/Makefile | cut -d= -f2-) $(EXTRA_CFLAGS)
 
+# Library variables.
 BCRYPT_MAJOR = 1
 BCRYPT_MINOR = 0
 BCRYPT_PATCH = 0
@@ -23,7 +26,7 @@ BCRYPT_MANPAGE_LINKS = bcrypt_gensalt.3 bcrypt_hashpw.3 bcrypt_checkpw.3
 
 # Installation variables.
 
-# This is the most common convention. This is used for LIBDIR, which can be
+# This is the most common convention. It is used for LIBDIR, which can be
 # overridden completely below.
 MACHINE = $(shell uname -m)
 ifeq ($(MACHINE),x86_64)
@@ -38,6 +41,10 @@ MANDIR ?= $(PREFIX)/share/man
 MAN3DIR = $(MANDIR)/man3
 INCLUDEDIR ?= $(PREFIX)/include/bcrypt
 LIBDIR ?= $(PREFIX)/$(LIBDIRNAME)
+
+#
+# Macros and rules.
+#
 
 define make_lib_links
 set -e ; \
