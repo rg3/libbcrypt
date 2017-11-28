@@ -2,6 +2,7 @@
 CRYPT_BLOWFISH_DIR = crypt_blowfish
 CRYPT_BLOWFISH_SRC = $(sort $(wildcard $(CRYPT_BLOWFISH_DIR)/*.c $(CRYPT_BLOWFISH_DIR)/*.S))
 CRYPT_BLOWFISH_OBJ = $(patsubst %.c,%.o,$(patsubst %.S,%.o,$(CRYPT_BLOWFISH_SRC)))
+CRYPT_BLOWFISH_LIB = $(CRYPT_BLOWFISH_DIR)/crypt_blowfish.a
 
 # Compiler.
 CC = $(shell grep '^CC = ' $(CRYPT_BLOWFISH_DIR)/Makefile | cut -d= -f2-)
@@ -75,14 +76,19 @@ bcrypt_test: bcrypt_test.o $(BCRYPT_LDNAME)
 $(BCRYPT_LDNAME) $(BCRYPT_SONAME): $(BCRYPT_SOFILE)
 	$(call make_lib_links,.)
 
-$(BCRYPT_SOFILE): bcrypt.o $(CRYPT_BLOWFISH_OBJ)
-	$(CC) $(EXTRA_CFLAGS) -shared -Wl,-soname,$(BCRYPT_SONAME) -o $(BCRYPT_SOFILE) bcrypt.o $(CRYPT_BLOWFISH_OBJ)
+$(BCRYPT_SOFILE): bcrypt.o $(CRYPT_BLOWFISH_LIB)
+	$(CC) $(EXTRA_CFLAGS) -shared -Wl,-soname,$(BCRYPT_SONAME) -o $(BCRYPT_SOFILE) bcrypt.o $(CRYPT_BLOWFISH_LIB)
+
+FORCE:
+
+$(CRYPT_BLOWFISH_LIB): FORCE
+	@set -e ; \
+	    $(MAKE) -q CFLAGS="$(CFLAGS)" -C $(CRYPT_BLOWFISH_DIR) || \
+	    ( $(MAKE) CFLAGS="$(CFLAGS)" -C $(CRYPT_BLOWFISH_DIR) && \
+	      ar Dr $@ $(CRYPT_BLOWFISH_OBJ) )
 
 %.o: %.c bcrypt.h
 	$(CC) $(CFLAGS) -c $<
-
-$(CRYPT_BLOWFISH_OBJ):
-	$(MAKE) CFLAGS="$(CFLAGS)" -C $(CRYPT_BLOWFISH_DIR)
 
 $(BCRYPT_MANPAGE): $(BCRYPT_MANPAGE_SOURCE)
 	a2x --doctype manpage --format manpage $<
