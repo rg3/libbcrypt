@@ -85,7 +85,7 @@ $(CRYPT_BLOWFISH_LIB): FORCE
 	@set -e ; \
 	    $(MAKE) -q CFLAGS="$(CFLAGS)" -C $(CRYPT_BLOWFISH_DIR) || \
 	    ( $(MAKE) CFLAGS="$(CFLAGS)" -C $(CRYPT_BLOWFISH_DIR) && \
-	      ar Dr $@ $(CRYPT_BLOWFISH_OBJ) )
+	      ar Dr $@ $(CRYPT_BLOWFISH_OBJ) && ranlib -D $@ )
 
 %.o: %.c bcrypt.h
 	$(CC) $(CFLAGS) -c $<
