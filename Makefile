@@ -1,4 +1,5 @@
-CC = gcc
+# Compiler.
+CC = $(shell grep '^CC = ' $(CRYPT_BLOWFISH_DIR)/Makefile | cut -d= -f2-)
 EXTRA_CFLAGS = -fPIC -fvisibility=hidden
 CFLAGS = $(shell grep '^CFLAGS = ' crypt_blowfish/Makefile | cut -d= -f2-) $(EXTRA_CFLAGS)
 
