@@ -59,8 +59,10 @@ set -e ; \
     done
 endef
 
+.PHONY: all
 all: $(BCRYPT_SOFILE)
 
+.PHONY: test
 test: bcrypt_test
 	@set -e ; \
 	    for prog in $^; do \
@@ -85,10 +87,12 @@ $(CRYPT_BLOWFISH_OBJ):
 $(BCRYPT_MANPAGE): $(BCRYPT_MANPAGE_SOURCE)
 	a2x --doctype manpage --format manpage $<
 
+.PHONY: clean
 clean:
 	rm -f *.o bcrypt_test $(BCRYPT_SOFILE) $(BCRYPT_SONAME) $(BCRYPT_LDNAME) $(BCRYPT_MANPAGE) *~ core
 	$(MAKE) -C $(CRYPT_BLOWFISH_DIR) clean
 
+.PHONY: install
 install: $(BCRYPT_SOFILE) $(BCRYPT_MANPAGE) bcrypt.h
 	install -d $(DESTDIR)$(MAN3DIR)
 	install -d $(DESTDIR)$(INCLUDEDIR)
