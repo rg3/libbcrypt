@@ -1,6 +1,6 @@
 *.o
 *.a
-*.so.*
+*.so*
 *.3
 bcrypt_test
 !crypt_blowfish/crypt.3
