@@ -1,0 +1,61 @@
+BCRYPT(3)
+=========
+
+NAME
+----
+bcrypt - Password hashing library
+
+SYNOPSIS
+--------
+
+---------------------------------------
+#include <bcrypt.h>
+
+int bcrypt_gensalt(int workfactor, char salt[BCRYPT_HASHSIZE]);
+
+int bcrypt_hashpw(const char *passwd,
+                  const char salt[BCRYPT_HASHSIZE],
+                  char hash[BCRYPT_HASHSIZE]);
+
+int bcrypt_checkpw(const char *passwd, const char hash[BCRYPT_HASHSIZE]);
+---------------------------------------
+
+Link with *-lbcrypt*.
+
+DESCRIPTION
+-----------
+
+The function _bcrypt_gensalt_ can be used to generate a salt value for hashing a
+password with a following call to _bcrypt_hashpw_. Its _workfactor_ argument
+determines how many rounds will be used and the time it will take to hash or
+verify the hashed password. Allowed values range from 4 to 31. If the provided
+work factor is not in the previous range, it will default to
+BCRYPT_DEFAULT_WORK_FACTOR. The _salt_ argument is an output array of chars that
+will store the generated salt. It must have space for at least BCRYPT_HASHSIZE
+bytes.
+
+The function _bcrypt_hashpw_ expects a password to be hashed (_passwd_), a
+_salt_ to hash the password with, generated with _bcrypt_gensalt_ and a char
+array to leave the result (_hash_). Both the salt and the output hash arguments
+must point to buffers with, at least, BCRYPT_HASHSIZE bytes in capacity. It can
+also be used to verify passwords, but it is easier to use _bcrypt_checkpw_ for
+that specific purpose.
+
+The function _bcrypt_checkpw_ expects a password (_passwd_) and a _hash_ to
+verify the password against, allowing you to see if the password matches a
+stored hash.
+
+RETURN VALUE
+------------
+
+Both _bcrypt_gensalt_ and _bcrypt_hashpw_ return zero on success and nonzero on
+errors.
+
+_bcrypt_checkpw_ will return -1 on errors, zero if the provided password matches
+the given hash and a value greater than zero if the password and hashes do not match.
+
+AUTHORS
+-------
+
+Ricardo Garcia <r@rg3.name> based on the work of Solar Designer at
+http://www.openwall.com/crypt/.
