@@ -61,7 +61,7 @@ set -e ; \
 endef
 
 .PHONY: all
-all: $(BCRYPT_SOFILE)
+all: $(BCRYPT_SOFILE) $(BCRYPT_MANPAGE) bcrypt.h
 
 .PHONY: test
 test: bcrypt_test
@@ -99,7 +99,7 @@ clean:
 	$(MAKE) -C $(CRYPT_BLOWFISH_DIR) clean
 
 .PHONY: install
-install: $(BCRYPT_SOFILE) $(BCRYPT_MANPAGE) bcrypt.h
+install: all
 	install -d $(DESTDIR)$(MAN3DIR)
 	install -d $(DESTDIR)$(INCLUDEDIR)
 	install -d $(DESTDIR)$(LIBDIR)
