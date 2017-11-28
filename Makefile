@@ -1,7 +1,12 @@
+# Solar Designer implementation.
+CRYPT_BLOWFISH_DIR = crypt_blowfish
+CRYPT_BLOWFISH_SRC = $(sort $(wildcard $(CRYPT_BLOWFISH_DIR)/*.c $(CRYPT_BLOWFISH_DIR)/*.S))
+CRYPT_BLOWFISH_OBJ = $(patsubst %.c,%.o,$(patsubst %.S,%.o,$(CRYPT_BLOWFISH_SRC)))
+
 # Compiler.
 CC = $(shell grep '^CC = ' $(CRYPT_BLOWFISH_DIR)/Makefile | cut -d= -f2-)
 EXTRA_CFLAGS = -fPIC -fvisibility=hidden
-CFLAGS = $(shell grep '^CFLAGS = ' crypt_blowfish/Makefile | cut -d= -f2-) $(EXTRA_CFLAGS)
+CFLAGS = $(shell grep '^CFLAGS = ' $(CRYPT_BLOWFISH_DIR)/Makefile | cut -d= -f2-) $(EXTRA_CFLAGS)
 
 BCRYPT_MAJOR = 1
 BCRYPT_MINOR = 0
@@ -61,22 +66,21 @@ bcrypt_test: bcrypt_test.o $(BCRYPT_LDNAME)
 $(BCRYPT_LDNAME) $(BCRYPT_SONAME): $(BCRYPT_SOFILE)
 	$(call make_lib_links,.)
 
-$(BCRYPT_SOFILE): bcrypt.o crypt_blowfish
-	$(CC) $(EXTRA_CFLAGS) -shared -Wl,-soname,$(BCRYPT_SONAME) -o $(BCRYPT_SOFILE) bcrypt.o crypt_blowfish/*.o
+$(BCRYPT_SOFILE): bcrypt.o $(CRYPT_BLOWFISH_OBJ)
+	$(CC) $(EXTRA_CFLAGS) -shared -Wl,-soname,$(BCRYPT_SONAME) -o $(BCRYPT_SOFILE) bcrypt.o $(CRYPT_BLOWFISH_OBJ)
 
 %.o: %.c bcrypt.h
 	$(CC) $(CFLAGS) -c $<
 
-.PHONY: crypt_blowfish
-crypt_blowfish:
-	$(MAKE) CFLAGS="$(CFLAGS)" -C crypt_blowfish
+$(CRYPT_BLOWFISH_OBJ):
+	$(MAKE) CFLAGS="$(CFLAGS)" -C $(CRYPT_BLOWFISH_DIR)
 
 $(BCRYPT_MANPAGE): $(BCRYPT_MANPAGE_SOURCE)
 	a2x --doctype manpage --format manpage $<
 
 clean:
 	rm -f *.o bcrypt_test $(BCRYPT_SOFILE) $(BCRYPT_SONAME) $(BCRYPT_LDNAME) $(BCRYPT_MANPAGE) *~ core
-	$(MAKE) -C crypt_blowfish clean
+	$(MAKE) -C $(CRYPT_BLOWFISH_DIR) clean
 
 install: $(BCRYPT_SOFILE) $(BCRYPT_MANPAGE) bcrypt.h
 	install -d $(DESTDIR)$(MAN3DIR)
