@@ -1,7 +1,5 @@
 # Solar Designer implementation.
 CRYPT_BLOWFISH_DIR = crypt_blowfish
-CRYPT_BLOWFISH_SRC = $(sort $(wildcard $(CRYPT_BLOWFISH_DIR)/*.c $(CRYPT_BLOWFISH_DIR)/*.S))
-CRYPT_BLOWFISH_OBJ = $(patsubst %.c,%.o,$(patsubst %.S,%.o,$(CRYPT_BLOWFISH_SRC)))
 CRYPT_BLOWFISH_LIB = $(CRYPT_BLOWFISH_DIR)/crypt_blowfish.a
 
 # Compiler.
@@ -85,7 +83,7 @@ $(CRYPT_BLOWFISH_LIB): FORCE
 	@set -e ; \
 	    $(MAKE) -q CFLAGS="$(CFLAGS)" -C $(CRYPT_BLOWFISH_DIR) || \
 	    ( $(MAKE) CFLAGS="$(CFLAGS)" -C $(CRYPT_BLOWFISH_DIR) && \
-	      ar Dr $@ $(CRYPT_BLOWFISH_OBJ) && ranlib -D $@ )
+	      ar Dr $@ $(CRYPT_BLOWFISH_DIR)/*.o && ranlib -D $@ )
 
 %.o: %.c bcrypt.h
 	$(CC) $(CFLAGS) -c $<
