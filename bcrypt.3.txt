@@ -55,6 +55,10 @@ The function _bcrypt_checkpw_ expects a password (_passwd_) and a _hash_ to
 verify the password against, allowing you to see if the password matches a
 stored hash.
 
+Do note the generated hashes are null-terminated strings that can be printed or
+stored and they include the salt information. There is no need to store the salt
+separately. Hence, verifying a password only needs the hash string.
+
 RETURN VALUE
 ------------
 
