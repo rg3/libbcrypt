@@ -40,9 +40,10 @@ DESTDIR ?=
 PREFIX ?= /usr/local
 MANDIR ?= $(PREFIX)/share/man
 MAN3DIR = $(MANDIR)/man3
-INCLUDEDIR ?= $(PREFIX)/include/bcrypt
+INCLUDEDIR ?= $(PREFIX)/include
 LIBDIR ?= $(PREFIX)/$(LIBDIRNAME)
 
+INCLUDESUBDIR = $(INCLUDEDIR)/$(BCRYPT_PRNAME)
 PKGCONFIGDIR = $(LIBDIR)/pkgconfig
 
 #
@@ -113,11 +114,11 @@ clean:
 .PHONY: install
 install: all
 	install -d $(DESTDIR)$(MAN3DIR)
-	install -d $(DESTDIR)$(INCLUDEDIR)
+	install -d $(DESTDIR)$(INCLUDESUBDIR)
 	install -d $(DESTDIR)$(LIBDIR)
 	install -d $(DESTDIR)$(PKGCONFIGDIR)
 	install -m 755 $(BCRYPT_SOFILE) $(DESTDIR)$(LIBDIR)
-	install -m 644 bcrypt.h $(DESTDIR)$(INCLUDEDIR)
+	install -m 644 bcrypt.h $(DESTDIR)$(INCLUDESUBDIR)
 	install -m 644 $(BCRYPT_MANPAGE) $(DESTDIR)$(MAN3DIR)
 	install -m 644 $(BCRYPT_PCFILE) $(DESTDIR)$(PKGCONFIGDIR)
 	$(call make_lib_links,$(DESTDIR)$(LIBDIR))
