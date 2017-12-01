@@ -54,6 +54,43 @@ errors.
 _bcrypt_checkpw_ will return -1 on errors, zero if the provided password matches
 the given hash and a value greater than zero if the password and hashes do not match.
 
+EXAMPLE
+-------
+
+Hashing a password:
+
+---------------------------------------
+char salt[BCRYPT_HASHSIZE];
+char hash[BCRYPT_HASHSIZE];
+int ret;
+
+ret = bcrypt_gensalt(BCRYPT_DEFAULT_WORK_FACTOR, salt);
+if (ret != 0)
+    // Handle the error here.
+ret = bcrypt_hashpw("thepassword", salt, hash);
+if (ret != 0)
+    // Handle another error here.
+printf("Generated hash: %s\n", hash);
+---------------------------------------
+
+Verifying a password:
+
+---------------------------------------
+char hash[BCRYPT_HASHSIZE];
+int ret;
+
+// Read the hash somewhere here and store it in the `hash' variable.
+
+ret = bcrypt_checkpw("thepassword", hash);
+if (ret == -1)
+    // Handle the error here.
+
+if (ret == 0)
+    printf("The password matches\n");
+else
+    printf("The password does NOT match\n");
+---------------------------------------
+
 AUTHORS
 -------
 
