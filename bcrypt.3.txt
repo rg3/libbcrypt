@@ -8,6 +8,9 @@ bcrypt - Password hashing library
 SYNOPSIS
 --------
 
+Header and prototypes
+~~~~~~~~~~~~~~~~~~~~~
+
 ---------------------------------------
 #include <bcrypt.h>
 
@@ -17,10 +20,17 @@ int bcrypt_hashpw(const char *passwd,
                   const char salt[BCRYPT_HASHSIZE],
                   char hash[BCRYPT_HASHSIZE]);
 
-int bcrypt_checkpw(const char *passwd, const char hash[BCRYPT_HASHSIZE]);
+int bcrypt_checkpw(const char passwd, const char hash[BCRYPT_HASHSIZE]);
 ---------------------------------------
 
-Link with *-lbcrypt*.
+Compilation and linkage
+~~~~~~~~~~~~~~~~~~~~~~~
+
+In systems with *pkg-config* or an equivalent tool, compile with *pkg-config
+--cflags bcrypt* and link with *pkg-config --libs bcrypt*.
+
+Otherwise, check the installation path for *bcrypt.h* and link with *-lbcrypt*
+and an additional *-L* flag to indicate the library location.
 
 DESCRIPTION
 -----------
