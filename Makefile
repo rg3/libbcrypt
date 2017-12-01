@@ -23,6 +23,8 @@ BCRYPT_MANPAGE = bcrypt.3
 BCRYPT_MANPAGE_SOURCE = $(BCRYPT_MANPAGE).txt
 BCRYPT_MANPAGE_LINKS = bcrypt_gensalt.3 bcrypt_hashpw.3 bcrypt_checkpw.3
 
+BCRYPT_PCFILE = bcrypt.pc
+
 # Installation variables.
 
 # This is the most common convention. It is used for LIBDIR, which can be
@@ -40,6 +42,8 @@ MANDIR ?= $(PREFIX)/share/man
 MAN3DIR = $(MANDIR)/man3
 INCLUDEDIR ?= $(PREFIX)/include/bcrypt
 LIBDIR ?= $(PREFIX)/$(LIBDIRNAME)
+
+PKGCONFIGDIR = $(LIBDIR)/pkgconfig
 
 #
 # Macros and rules.
@@ -59,7 +63,7 @@ set -e ; \
 endef
 
 .PHONY: all
-all: $(BCRYPT_SOFILE) $(BCRYPT_MANPAGE) bcrypt.h
+all: $(BCRYPT_SOFILE) $(BCRYPT_MANPAGE) $(BCRYPT_PCFILE) bcrypt.h
 
 .PHONY: test
 test: bcrypt_test
@@ -91,9 +95,19 @@ $(CRYPT_BLOWFISH_LIB): FORCE
 $(BCRYPT_MANPAGE): $(BCRYPT_MANPAGE_SOURCE)
 	a2x --doctype manpage --format manpage $<
 
+$(BCRYPT_PCFILE):
+	@set -e ; \
+	    >$@ ; \
+	    echo "Name: $(BCRYPT_PRNAME)" >>$@ ; \
+	    echo "Description: bcrypt password hash C library" >>$@ ; \
+	    echo "Version: $(BCRYPT_MAJOR).$(BCRYPT_MINOR).$(BCRYPT_PATCH)" >>$@ ; \
+	    echo "Cflags: -I$(INCLUDESUBDIR)" >>$@ ; \
+	    echo "Libs: -L$(LIBDIR) -l$(BCRYPT_PRNAME)" >>$@ ; \
+	    :
+
 .PHONY: clean
 clean:
-	rm -f *.o bcrypt_test $(BCRYPT_SOFILE) $(BCRYPT_SONAME) $(BCRYPT_LDNAME) $(BCRYPT_MANPAGE) *~ core
+	rm -f *.o bcrypt_test $(BCRYPT_SOFILE) $(BCRYPT_SONAME) $(BCRYPT_LDNAME) $(BCRYPT_MANPAGE) $(BCRYPT_PCFILE) *~ core
 	$(MAKE) -C $(CRYPT_BLOWFISH_DIR) clean
 
 .PHONY: install
@@ -101,8 +115,10 @@ install: all
 	install -d $(DESTDIR)$(MAN3DIR)
 	install -d $(DESTDIR)$(INCLUDEDIR)
 	install -d $(DESTDIR)$(LIBDIR)
+	install -d $(DESTDIR)$(PKGCONFIGDIR)
 	install -m 755 $(BCRYPT_SOFILE) $(DESTDIR)$(LIBDIR)
 	install -m 644 bcrypt.h $(DESTDIR)$(INCLUDEDIR)
 	install -m 644 $(BCRYPT_MANPAGE) $(DESTDIR)$(MAN3DIR)
+	install -m 644 $(BCRYPT_PCFILE) $(DESTDIR)$(PKGCONFIGDIR)
 	$(call make_lib_links,$(DESTDIR)$(LIBDIR))
 	$(call make_man_links,$(DESTDIR)$(MAN3DIR))
