@@ -11,7 +11,8 @@ specifically to verify passwords and avoid timing attacks. Please check the
 header bcrypt.h and the generated manpage. Both mention the prototypes, describe
 what they do and include examples.
 
-Please read the INSTALL file for instructions on building from source.
+The INSTALL file explains how to build and install the library from its source
+code and lists the requirements for doing so.
 
 All this code is released to the public domain under the terms of CC0. See the
 COPYING file for the legal text.
