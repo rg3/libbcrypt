@@ -1,7 +1,7 @@
-Installing from source requires asciidoc (for a2x), probably DocBook
-stylesheets, GNU Make and GCC or a compatible compiler. make is usually GNU Make
-in destkop Linux distributions, but you may have to call it as gmake in other
-systems. Quick guide:
+Installing from source requires asciidoc (for a2x), probably DocBook DTD files,
+GNU Make and GCC or a compatible compiler. "make" is usually GNU Make in destkop
+Linux distributions, but you may have to call it as "gmake" in other systems.
+Quick guide:
 
 make
 make test
@@ -14,11 +14,14 @@ include them in every call to make. This is important.
 Variables:
 
 * CC to set the C compiler.
-* DESTDIR for a base installation path, empty by default.
 * PREFIX, which is /usr/local by default.
 * MANDIR, which is $(PREFIX)/share/man by default.
 * INCLUDEDIR, which is $(PREFIX)/include by default.
 * LIBDIR, which is $(PREFIX)/lib or $(PREFIX/lib64 by default.
+
+Only needed in the installation step:
+
+* DESTDIR for a base installation path, empty by default.
 
 You could also set CFLAGS but, by default, the ones provided by Solar Designer
 at crypt_blowfish/Makefile are used. Personally, I recommend to keep them as
