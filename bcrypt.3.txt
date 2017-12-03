@@ -26,8 +26,9 @@ int bcrypt_checkpw(const char *passwd, const char hash[BCRYPT_HASHSIZE]);
 Compilation and linkage
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-In systems with *pkg-config* or an equivalent tool, compile with *pkg-config
---cflags bcrypt* and link with *pkg-config --libs bcrypt*.
+In systems with *pkg-config* or an equivalent tool, compile with the flags
+indicated by *pkg-config --cflags libbcrypt* and link with the flags indicated
+by *pkg-config --libs libbcrypt*.
 
 Otherwise, check the installation path for *bcrypt.h* and link with *-lbcrypt*
 and an additional *-L* flag to indicate the library location.
