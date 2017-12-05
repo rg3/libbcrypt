@@ -21,6 +21,12 @@ int bcrypt_hashpw(const char *passwd,
                   char hash[BCRYPT_HASHSIZE]);
 
 int bcrypt_checkpw(const char *passwd, const char hash[BCRYPT_HASHSIZE]);
+
+int bcrypt_sha512_base64(const char *passwd,
+	                 char digest[BCRYPT_512BITS_BASE64_SIZE]);
+
+int bcrypt_sha3_512_base64(const char *passwd,
+			   char digest[BCRYPT_512BITS_BASE64_SIZE]);
 ---------------------------------------
 
 Compilation and linkage
@@ -60,17 +66,70 @@ Do note the generated hashes are null-terminated strings that can be printed or
 stored and they include the salt information. There is no need to store the salt
 separately. Hence, verifying a password only needs the hash string.
 
+The function _bcrypt_sha512_base64_ can be used to get the base64 representation
+of the SHA-512 digest of the password _passwd_. This digest can be used as a
+replacement for the password itself to avoid DoS attacks with long passwords and
+to overcome the character limit of the bcrypt implementation. Please see the
+*CAVEATS* and *EXAMPLES* sections for more details.
+
+The function _bcrypt_sha3_512_base64_ is identical to the previous one but uses
+SHA3-512 instead of SHA-512.
+
 RETURN VALUE
 ------------
 
-Both _bcrypt_gensalt_ and _bcrypt_hashpw_ return zero on success and nonzero on
-errors.
+Both _bcrypt_gensalt_, _bcrypt_hashpw_, _bcrypt_sha512_base64_ and
+_bcrypt_sha3_512_base64_ return zero on success and nonzero on errors.
 
 _bcrypt_checkpw_ will return -1 on errors, zero if the provided password matches
 the given hash and a value greater than zero if the password and hashes do not match.
 
-EXAMPLE
+CAVEATS
 -------
+
+The included bcrypt implementation only uses the first 72 bytes of the password
+to generate the hash. That means two passwords with the same initial 72-byte
+prefix but a different suffix will give the same hash if using the same salt.
+They are, effectively, the same password. 72 bytes may be 72 characters or may
+be as low as 18 characters if the password is completely made of 4-byte UTF-8
+sequences, for example.
+
+This can be a problem in many contexts. You may want users to be able to use
+passphrases for which the 72-bytes limit is simply too low. You probably want,
+if possible, to capture the entropy of the full passphrase to calculate the
+bcrypt hash instead of ignoring everyting after the 72nd byte.
+
+One solution to this problem is pre-hashing the password with a secure and fast
+cryptographic hash function, and use the resulting digest, or a textual
+representation of it, as the effective password. This scheme was in use in
+September 2016 by Dropbox and received positive criticism.
+
+Dropbox was hashing the passwords first with SHA-512. The resulting binary
+digest may contain null characters and cannot be used as a text string. As per
+the blog post contents, we can deduce they were converting the 64-bytes digest
+to 88 text bytes in base64 and feeding that to bcrypt. bcrypt would use the
+first 72 bytes of the base64 representation, for a total underlying entropy of
+72*3/4 = 54 bytes or 432 bits, which should be extremely secure as a password.
+
+Using this scheme, you can allow users to type very long passwords or
+passphrases with varied entropy and compress that entropy very fast to something
+having at most 432 bits of entropy. In the process, this scheme avoids possible
+DoS attacks and lets different passwords, even with a common 72-byte prefix, be
+considered different.
+
+The _bcrypt_sha512_base64_ and _bcrypt_sha3_512_base64_ functions are provided
+with the goal of letting you replicate that scheme. The first one hashes the
+given password with SHA-512 and is the "conservative" choice. The second one
+uses the newer SHA3-512 algorithm and should also be fine. Both output the
+digest as a null-terminated base64 string that can be feeded directly to bcrypt.
+
+SHA-512, SHA3-512 and the base64 routine are implemented in software, with
+reasonable performance. SHA3-512 is much slower than SHA-512, but their
+run time is many orders of magnitudes smaller than running bcrypt itself to hash
+or verify the password.
+
+EXAMPLES
+--------
 
 Hashing a password
 ~~~~~~~~~~~~~~~~~~
@@ -83,9 +142,11 @@ int ret;
 ret = bcrypt_gensalt(BCRYPT_DEFAULT_WORK_FACTOR, salt);
 if (ret != 0)
     // Handle the error here.
+
 ret = bcrypt_hashpw("thepassword", salt, hash);
 if (ret != 0)
     // Handle another error here.
+
 printf("Generated hash: %s\n", hash);
 ---------------------------------------
 
@@ -96,7 +157,7 @@ Verifying a password
 char hash[BCRYPT_HASHSIZE];
 int ret;
 
-// Read the hash somewhere here and store it in the `hash' variable.
+// Read the hash somewhere here and store it in the `hash' buffer.
 
 ret = bcrypt_checkpw("thepassword", hash);
 if (ret == -1)
@@ -108,8 +169,68 @@ else
     printf("The password does NOT match\n");
 ---------------------------------------
 
+Hashing a password using SHA-512 as a pre-hash
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+---------------------------------------
+char salt[BCRYPT_HASHSIZE];
+char hash[BCRYPT_HASHSIZE];
+char digest[BCRYPT_512BITS_BASE64_SIZE];
+int ret;
+
+ret = bcrypt_gensalt(BCRYPT_DEFAULT_WORK_FACTOR, salt);
+if (ret != 0)
+    // Handle the error here.
+
+ret = bcrypt_sha512_base64("thepassword", digest);
+if (ret != 0)
+    // Handle another error here.
+
+ret = bcrypt_hashpw(digest, salt, hash);
+if (ret != 0)
+    // Handle another error here.
+
+printf("Generated hash: %s\n", hash);
+---------------------------------------
+
+Verifying a password using SHA-512 as a pre-hash
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+---------------------------------------
+char hash[BCRYPT_HASHSIZE];
+char digest[BCRYPT_512BITS_BASE64_SIZE];
+int ret;
+
+// Read the hash somewhere here and store it in the `hash' buffer.
+
+ret = bcrypt_sha512_base64("thepassword", digest);
+if (ret != 0)
+    // Handle the error here.
+
+ret = bcrypt_checkpw(digest, hash);
+if (ret == -1)
+    // Handle another error here.
+
+if (ret == 0)
+    printf("The password matches\n");
+else
+    printf("The password does NOT match\n");
+---------------------------------------
+
 AUTHORS
 -------
 
-Ricardo Garcia <r@rg3.name> based on the work of Solar Designer at
-http://www.openwall.com/crypt/.
+Ricardo Garcia <r@rg3.name> based on the work of:
+
+- Solar Designer.
+- The Keccak Team.
+- musl-libc.
+- Dropbox.
+
+REFERENCES
+----------
+
+. http://www.openwall.com/crypt/
+. https://github.com/gvanas/KeccakCodePackage
+. https://git.musl-libc.org/cgit/musl
+. https://blogs.dropbox.com/tech/2016/09/how-dropbox-securely-stores-your-passwords/

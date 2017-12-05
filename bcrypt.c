@@ -13,11 +13,16 @@
  */
 #include <string.h>
 #include <unistd.h>
+#include <limits.h>
 
 #include "bcrypt.h"
 #include "crypt_blowfish/ow-crypt.h"
+#include "sha512.h"
+#include "keccak.h"
+#include "base64.h"
 
 #define RANDBYTES (16)
+#define BYTES_IN_512BITS (64)
 #define BCRYPT_API __attribute__ ((visibility ("default")))
 
 /*
@@ -29,8 +34,8 @@
 */
 static int timing_safe_strcmp(const char *str1, const char *str2)
 {
-	const unsigned char *u1;
-	const unsigned char *u2;
+	const unsigned char *a;
+	const unsigned char *b;
 	int ret;
 	int i;
 
@@ -43,12 +48,12 @@ static int timing_safe_strcmp(const char *str1, const char *str2)
 		return 1;
 
 	/* Force unsigned for bitwise operations. */
-	u1 = (const unsigned char *)str1;
-	u2 = (const unsigned char *)str2;
+	a = (const unsigned char *)str1;
+	b = (const unsigned char *)str2;
 
 	ret = 0;
 	for (i = 0; i < len1; ++i)
-		ret |= (u1[i] ^ u2[i]);
+		ret |= (a[i] ^ b[i]);
 
 	return ret;
 }
@@ -89,4 +94,30 @@ BCRYPT_API int bcrypt_checkpw(const char *passwd, const char hash[BCRYPT_HASHSIZ
 		return -1;
 
 	return timing_safe_strcmp(hash, outhash);
+}
+
+BCRYPT_API int bcrypt_sha512_base64(const char *in, char digest[BCRYPT_512BITS_BASE64_SIZE])
+{
+	unsigned char bindigest[BYTES_IN_512BITS];
+	size_t len = strlen(in);
+
+	if (len > ULONG_MAX)
+		return 1;
+
+	sha512_calc(in, (unsigned long)len, (char *)bindigest);
+	base64_calc(bindigest, sizeof(bindigest), digest);
+	return 0;
+}
+
+BCRYPT_API int bcrypt_sha3_512_base64(const char *in, char digest[BCRYPT_512BITS_BASE64_SIZE])
+{
+	unsigned char bindigest[BYTES_IN_512BITS];
+	size_t len = strlen(in);
+
+	if(len > ULLONG_MAX)
+		return 1;
+
+	FIPS202_SHA3_512((const u8 *)in, (u64)len, bindigest);
+	base64_calc(bindigest, sizeof(bindigest), digest);
+	return 0;
 }

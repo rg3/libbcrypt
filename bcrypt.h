@@ -17,6 +17,13 @@
 #define BCRYPT_HASHSIZE	(64)
 #define BCRYPT_DEFAULT_WORK_FACTOR (12)
 
+/*
+ * Length of a null-terminated string containing a base64 representantion of
+ * 512 bits. Rounded up to a pretty number.
+ */
+#define BCRYPT_512BITS_BASE64_SIZE (90)
+
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -62,6 +69,24 @@ int bcrypt_hashpw(const char *passwd, const char salt[BCRYPT_HASHSIZE],
  *
  */
 int bcrypt_checkpw(const char *passwd, const char hash[BCRYPT_HASHSIZE]);
+
+/*
+ * This function expects a password and a char array to leave the result, with
+ * at least BCRYPT_512BITS_BASE64_SIZE capacity. It will calculate the SHA-512
+ * hash of the given password and output the result as the base64
+ * representation of the digest.
+ *
+ * It will return zero if no problems were encountered and nonzero otherwise.
+ */
+int bcrypt_sha512_base64(const char *passwd,
+	                 char digest[BCRYPT_512BITS_BASE64_SIZE]);
+
+/*
+ * This function is identical to the one above, but it uses SHA3-512 instead of
+ * SHA-512.
+ */
+int bcrypt_sha3_512_base64(const char *passwd,
+			   char digest[BCRYPT_512BITS_BASE64_SIZE]);
 
 /*
  * Brief Example

@@ -82,8 +82,8 @@ $(BCRYPT_BASENAME)_test: $(BCRYPT_BASENAME)_test.o $(BCRYPT_LDNAME)
 $(BCRYPT_LDNAME) $(BCRYPT_SONAME): $(BCRYPT_SOFILE)
 	$(call make_lib_links,.)
 
-$(BCRYPT_SOFILE): $(BCRYPT_BASENAME).o $(CRYPT_BLOWFISH_LIB)
-	$(CC) $(EXTRA_CFLAGS) -shared -Wl,-soname,$(BCRYPT_SONAME) -o $(BCRYPT_SOFILE) $(BCRYPT_BASENAME).o $(CRYPT_BLOWFISH_LIB)
+$(BCRYPT_SOFILE): $(BCRYPT_BASENAME).o keccak.o base64.o sha512.o $(CRYPT_BLOWFISH_LIB)
+	$(CC) $(EXTRA_CFLAGS) -shared -Wl,-soname,$(BCRYPT_SONAME) -o $@ $^
 
 FORCE:
 
@@ -93,7 +93,11 @@ $(CRYPT_BLOWFISH_LIB): FORCE
 	    ( $(MAKE) CFLAGS="$(CFLAGS)" -C $(CRYPT_BLOWFISH_DIR) && \
 	      ar Dr $@ $(CRYPT_BLOWFISH_DIR)/*.o && ranlib -D $@ )
 
-%.o: %.c $(BCRYPT_HEADER)
+$(BCRYPT_BASENAME)_test.c: $(BCRYPT_HEADER)
+
+%.c: %.h
+
+%.o: %.c
 	$(CC) $(CFLAGS) -c $<
 
 $(BCRYPT_MANPAGE): $(BCRYPT_MANPAGE_SOURCE)

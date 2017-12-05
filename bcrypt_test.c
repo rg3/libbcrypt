@@ -11,11 +11,15 @@ int main(void)
 	double elapsed;
 	char salt[BCRYPT_HASHSIZE];
 	char hash[BCRYPT_HASHSIZE];
+	char digest1[BCRYPT_512BITS_BASE64_SIZE];
+	char digest2[BCRYPT_512BITS_BASE64_SIZE];
 	int ret;
 
 	const char pass[] = "hi,mom";
 	const char hash1[] = "$2a$10$VEVmGHy4F4XQMJ3eOZJAUeb.MedU0W10pTPCuf53eHdKJPiSE8sMK";
 	const char hash2[] = "$2a$10$3F0BVk5t8/aoS.3ddaB3l.fxg5qvafQ9NybxcpXLzMeAt.nVWn.NO";
+	const char sha512[] = "TLbNem2eA98WFZOYRMOTshG7GNJbrb0O9rf6H2uXKL4CUh1mBr4ukRWD6JS6oxlgDUe60I03yjnA+LwpqDpRNQ==";
+	const char sha3_512[] = "W9QbCtFa66fIA7HD+0ItZRiq+eZCtNuwvXs+zhqeW/uzf/HSx1HImVhlsRWttuGkg2hQ1nDY/I1KSwbjB1n2lw==";
 
 	ret = bcrypt_gensalt(BCRYPT_DEFAULT_WORK_FACTOR, salt);
 	assert(ret == 0);
@@ -51,6 +55,14 @@ int main(void)
 
 	ret = bcrypt_checkpw(pass, hash2);
 	assert(ret == 0);
+
+	ret = bcrypt_sha512_base64(pass, digest1);
+	assert(ret == 0);
+	assert(strcmp(digest1, sha512) == 0);
+
+	ret = bcrypt_sha3_512_base64(pass, digest2);
+	assert(ret == 0);
+	assert(strcmp(digest2, sha3_512) == 0);
 
 	printf("All tests passed\n");
 	return 0;
