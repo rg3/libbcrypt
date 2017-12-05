@@ -72,6 +72,7 @@ all: $(BCRYPT_SOFILE) $(BCRYPT_MANPAGE) $(BCRYPT_PCFILE) $(BCRYPT_HEADER)
 .PHONY: test
 test: $(BCRYPT_BASENAME)_test
 	@set -e ; \
+	    $(MAKE) CFLAGS="$(CFLAGS)" -C $(CRYPT_BLOWFISH_DIR) check check_threads ; \
 	    for prog in $^; do \
 	        LD_LIBRARY_PATH=.:$$LD_LIBRARY_PATH ./$$prog ; \
 	    done
