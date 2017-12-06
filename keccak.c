@@ -8,9 +8,9 @@
 
 #include "keccak.h"
 
-void Keccak(ui r, ui c, const u8 *in, u64 inLen, u8 sfx, u8 *out, u64 outLen);
-int LFSR86540(u8 *R);
-void KeccakF1600(void *s);
+static void Keccak(ui r, ui c, const u8 *in, u64 inLen, u8 sfx, u8 *out, u64 outLen);
+static int LFSR86540(u8 *R);
+static void KeccakF1600(void *s);
 
 void FIPS202_SHAKE128(const u8 *in, u64 inLen, u8 *out, u64 outLen) { Keccak(1344, 256, in, inLen, 0x1F, out, outLen); }
 void FIPS202_SHAKE256(const u8 *in, u64 inLen, u8 *out, u64 outLen) { Keccak(1088, 512, in, inLen, 0x1F, out, outLen); }
@@ -19,7 +19,7 @@ void FIPS202_SHA3_256(const u8 *in, u64 inLen, u8 *out) { Keccak(1088, 512, in, 
 void FIPS202_SHA3_384(const u8 *in, u64 inLen, u8 *out) { Keccak(832, 768, in, inLen, 0x06, out, 48); }
 void FIPS202_SHA3_512(const u8 *in, u64 inLen, u8 *out) { Keccak(576, 1024, in, inLen, 0x06, out, 64); }
 
-int LFSR86540(u8 *R) { (*R)=((*R)<<1)^(((*R)&0x80)?0x71:0); return ((*R)&2)>>1; }
+static int LFSR86540(u8 *R) { (*R)=((*R)<<1)^(((*R)&0x80)?0x71:0); return ((*R)&2)>>1; }
 #define FOR(i,n) for(i=0; i<n; ++i)
 static u64 load64(const u8 *x) { ui i; u64 u=0; FOR(i,8) { u<<=8; u|=x[7-i]; } return u; }
 static void store64(u8 *x, u64 u) { ui i; FOR(i,8) { x[i]=u; u>>=8; } }
@@ -28,7 +28,7 @@ static void xor64(u8 *x, u64 u) { ui i; FOR(i,8) { x[i]^=u; u>>=8; } }
 #define rL(x,y) load64((u8*)s+8*(x+5*y))
 #define wL(x,y,l) store64((u8*)s+8*(x+5*y),l)
 #define XL(x,y,l) xor64((u8*)s+8*(x+5*y),l)
-void KeccakF1600(void *s)
+static void KeccakF1600(void *s)
 {
     ui r,x,y,i,j,Y; u8 R=0x01; u64 C[5],D;
     for(i=0; i<24; i++) {
@@ -38,7 +38,7 @@ void KeccakF1600(void *s)
         /*ι*/ FOR(j,7) if (LFSR86540(&R)) XL(0,0,(u64)1<<((1<<j)-1));
     }
 }
-void Keccak(ui r, ui c, const u8 *in, u64 inLen, u8 sfx, u8 *out, u64 outLen)
+static void Keccak(ui r, ui c, const u8 *in, u64 inLen, u8 sfx, u8 *out, u64 outLen)
 {
     (void)c; /* In the non-compact version, c+r were checked to see if they added to 1600 and nothing else. */
     /*initialize*/ u8 s[200]; ui R=r/8; ui i,b=0; FOR(i,200) s[i]=0;
