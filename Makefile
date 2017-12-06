@@ -1,6 +1,8 @@
 # Solar Designer implementation.
 CRYPT_BLOWFISH_DIR = crypt_blowfish
-CRYPT_BLOWFISH_LIB = $(CRYPT_BLOWFISH_DIR)/crypt_blowfish.a
+CRYPT_BLOWFISH_SRC = $(sort $(wildcard $(CRYPT_BLOWFISH_DIR)/*.[cS]))
+CRYPT_BLOWFISH_OBJ = $(patsubst %.S,%.o,$(CRYPT_BLOWFISH_SRC:%.c=%.o))
+CRYPT_BLOWFISH_LIB = $(CRYPT_BLOWFISH_DIR)/$(CRYPT_BLOWFISH_DIR).a
 
 # Compiler.
 CC = $(shell grep '^CC = ' $(CRYPT_BLOWFISH_DIR)/Makefile | cut -d= -f2-)
@@ -18,6 +20,7 @@ BCRYPT_PATCH = 0
 BCRYPT_BASENAME = bcrypt
 BCRYPT_LIBNAME = lib$(BCRYPT_BASENAME)
 BCRYPT_LDNAME = $(BCRYPT_LIBNAME).so
+BCRYPT_LAFILE = $(BCRYPT_LIBNAME).a
 BCRYPT_SONAME = $(BCRYPT_LDNAME).$(BCRYPT_MAJOR)
 BCRYPT_SOFILE = $(BCRYPT_SONAME).$(BCRYPT_MINOR).$(BCRYPT_PATCH)
 
@@ -27,6 +30,7 @@ BCRYPT_MANPAGE_LINKS = $(BCRYPT_BASENAME)_gensalt.3 $(BCRYPT_BASENAME)_hashpw.3 
 
 BCRYPT_HEADER = $(BCRYPT_BASENAME).h
 BCRYPT_PCFILE = $(BCRYPT_LIBNAME).pc
+BCRYPT_OBJS = $(BCRYPT_BASENAME).o keccak.o base64.o sha512.o
 
 # Installation variables.
 
@@ -67,24 +71,27 @@ set -e ; \
 endef
 
 .PHONY: all
-all: $(BCRYPT_SOFILE) $(BCRYPT_MANPAGE) $(BCRYPT_PCFILE) $(BCRYPT_HEADER)
+all: $(BCRYPT_SOFILE) $(BCRYPT_LAFILE) $(BCRYPT_MANPAGE) $(BCRYPT_PCFILE) $(BCRYPT_HEADER)
 
 .PHONY: test
 test: $(BCRYPT_BASENAME)_test
 	@set -e ; \
 	    $(MAKE) CFLAGS="$(CFLAGS)" -C $(CRYPT_BLOWFISH_DIR) check check_threads ; \
 	    for prog in $^; do \
-	        LD_LIBRARY_PATH=.:$$LD_LIBRARY_PATH ./$$prog ; \
+	        ./$$prog ; \
 	    done
 
-$(BCRYPT_BASENAME)_test: $(BCRYPT_BASENAME)_test.o $(BCRYPT_LDNAME)
-	$(CC) -o $@ $< -L. -l$(BCRYPT_BASENAME)
+$(BCRYPT_BASENAME)_test: $(BCRYPT_BASENAME)_test.o $(BCRYPT_LAFILE)
+	$(CC) -o $@ $^
 
 $(BCRYPT_LDNAME) $(BCRYPT_SONAME): $(BCRYPT_SOFILE)
 	$(call make_lib_links,.)
 
-$(BCRYPT_SOFILE): $(BCRYPT_BASENAME).o keccak.o base64.o sha512.o $(CRYPT_BLOWFISH_LIB)
+$(BCRYPT_SOFILE): $(BCRYPT_OBJS) $(CRYPT_BLOWFISH_LIB)
 	$(CC) $(EXTRA_CFLAGS) -shared -Wl,-soname,$(BCRYPT_SONAME) -o $@ $^
+
+$(BCRYPT_LAFILE): $(BCRYPT_OBJS) $(CRYPT_BLOWFISH_LIB)
+	ar Dr $@ $(BCRYPT_OBJS) $(CRYPT_BLOWFISH_OBJ) && ranlib -D $@
 
 FORCE:
 
@@ -92,7 +99,7 @@ $(CRYPT_BLOWFISH_LIB): FORCE
 	@set -e ; \
 	    $(MAKE) -q CFLAGS="$(CFLAGS)" -C $(CRYPT_BLOWFISH_DIR) || \
 	    ( $(MAKE) CFLAGS="$(CFLAGS)" -C $(CRYPT_BLOWFISH_DIR) && \
-	      ar Dr $@ $(CRYPT_BLOWFISH_DIR)/*.o && ranlib -D $@ )
+	      ar Dr $@ $(CRYPT_BLOWFISH_OBJ) && ranlib -D $@ )
 
 $(BCRYPT_BASENAME)_test.c: $(BCRYPT_HEADER)
 
@@ -116,7 +123,7 @@ $(BCRYPT_PCFILE):
 
 .PHONY: clean
 clean:
-	rm -f *.o $(BCRYPT_BASENAME)_test $(BCRYPT_SOFILE) $(BCRYPT_SONAME) $(BCRYPT_LDNAME) $(BCRYPT_MANPAGE) $(BCRYPT_PCFILE) *~ core
+	rm -f *.o $(BCRYPT_BASENAME)_test $(BCRYPT_SOFILE) $(BCRYPT_LAFILE) $(BCRYPT_SONAME) $(BCRYPT_LDNAME) $(BCRYPT_MANPAGE) $(BCRYPT_PCFILE) *~ core
 	$(MAKE) -C $(CRYPT_BLOWFISH_DIR) clean
 
 .PHONY: install
@@ -126,6 +133,7 @@ install: all
 	install -d $(DESTDIR)$(LIBDIR)
 	install -d $(DESTDIR)$(PKGCONFIGDIR)
 	install -m 755 $(BCRYPT_SOFILE) $(DESTDIR)$(LIBDIR)
+	install -m 644 $(BCRYPT_LAFILE) $(DESTDIR)$(LIBDIR)
 	install -m 644 $(BCRYPT_HEADER) $(DESTDIR)$(INCLUDESUBDIR)
 	install -m 644 $(BCRYPT_MANPAGE) $(DESTDIR)$(MAN3DIR)
 	install -m 644 $(BCRYPT_PCFILE) $(DESTDIR)$(PKGCONFIGDIR)
