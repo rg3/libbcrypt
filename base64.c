@@ -5,10 +5,10 @@
 #include <string.h>
 #include "base64.h"
 
-char base64_table[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-void base64_block(const unsigned char *in, size_t len, char *out);
+static char base64_table[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+static void base64_block(const unsigned char *in, size_t len, char *out);
 
-void base64_block(const unsigned char *in, size_t len, char out[4])
+static void base64_block(const unsigned char *in, size_t len, char out[4])
 {
 	unsigned char padded_in[3] = { '\0', '\0', '\0' };
 
