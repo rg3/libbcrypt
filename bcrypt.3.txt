@@ -179,11 +179,11 @@ char hash[BCRYPT_HASHSIZE];
 char digest[BCRYPT_512BITS_BASE64_SIZE];
 int ret;
 
-ret = bcrypt_gensalt(BCRYPT_DEFAULT_WORK_FACTOR, salt);
+ret = bcrypt_sha512("thepassword", digest);
 if (ret != 0)
     // Handle the error here.
 
-ret = bcrypt_sha512("thepassword", digest);
+ret = bcrypt_gensalt(BCRYPT_DEFAULT_WORK_FACTOR, salt);
 if (ret != 0)
     // Handle another error here.
 

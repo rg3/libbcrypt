@@ -89,33 +89,86 @@ int bcrypt_sha3_512(const char *passwd,
 		    char digest[BCRYPT_512BITS_BASE64_SIZE]);
 
 /*
- * Brief Example
- * -------------
+ * Brief Examples
+ * --------------
  *
- * Hashing a password:
+ * Hashing a password
  *
- *	char salt[BCRYPT_HASHSIZE];
- *	char hash[BCRYPT_HASHSIZE];
- *	int ret;
+ *     char salt[BCRYPT_HASHSIZE];
+ *     char hash[BCRYPT_HASHSIZE];
+ *     int ret;
  *
- *	ret = bcrypt_gensalt(BCRYPT_DEFAULT_WORK_FACTOR, salt);
- *	assert(ret == 0);
- *	ret = bcrypt_hashpw("thepassword", salt, hash);
- *	assert(ret == 0);
+ *     ret = bcrypt_gensalt(BCRYPT_DEFAULT_WORK_FACTOR, salt);
+ *     if (ret != 0)
+ *         // Handle the error here.
+ *
+ *     ret = bcrypt_hashpw("thepassword", salt, hash);
+ *     if (ret != 0)
+ *         // Handle another error here.
+ *
+ *     printf("Generated hash: %s\n", hash);
  *
  *
- * Verifying a password:
+ * Verifying a password
  *
- *	int ret;
+ *     char hash[BCRYPT_HASHSIZE];
+ *     int ret;
  *
- *      ret = bcrypt_checkpw("thepassword", "expectedhash");
- *      assert(ret != -1);
+ *     // Read the hash somewhere here and store it in the `hash' buffer.
  *
- *	if (ret == 0) {
- *		printf("The password matches\n");
- *	} else {
- *		printf("The password does NOT match\n");
- *	}
+ *     ret = bcrypt_checkpw("thepassword", hash);
+ *     if (ret == -1)
+ *         // Handle the error here.
+ *
+ *     if (ret == 0)
+ *         printf("The password matches\n");
+ *     else
+ *         printf("The password does NOT match\n");
+ *
+ *
+ * Hashing a password using SHA-512 as a pre-hash
+ *
+ *     char salt[BCRYPT_HASHSIZE];
+ *     char hash[BCRYPT_HASHSIZE];
+ *     char digest[BCRYPT_512BITS_BASE64_SIZE];
+ *     int ret;
+ *
+ *     ret = bcrypt_sha512("thepassword", digest);
+ *     if (ret != 0)
+ *         // Handle the error here.
+ *
+ *     ret = bcrypt_gensalt(BCRYPT_DEFAULT_WORK_FACTOR, salt);
+ *     if (ret != 0)
+ *         // Handle another error here.
+ *
+ *     ret = bcrypt_hashpw(digest, salt, hash);
+ *     if (ret != 0)
+ *         // Handle another error here.
+ *
+ *     printf("Generated hash: %s\n", hash);
+ *
+ *
+ * Verifying a password using SHA-512 as a pre-hash
+ *
+ *     char hash[BCRYPT_HASHSIZE];
+ *     char digest[BCRYPT_512BITS_BASE64_SIZE];
+ *     int ret;
+ *
+ *     // Read the hash somewhere here and store it in the `hash' buffer.
+ *
+ *     ret = bcrypt_sha512("thepassword", digest);
+ *     if (ret != 0)
+ *         // Handle the error here.
+ *
+ *     ret = bcrypt_checkpw(digest, hash);
+ *     if (ret == -1)
+ *         // Handle another error here.
+ *
+ *     if (ret == 0)
+ *         printf("The password matches\n");
+ *     else
+ *         printf("The password does NOT match\n");
+ *
  *
  */
 
