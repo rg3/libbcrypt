@@ -9,7 +9,7 @@ make install # Usually as root.
 
 When running make, you can set values for several variables to modify
 compilation, installation and meta-information paths. If you do, you need to
-include them in every call to make. This is important.
+include them in *every* call to make.
 
 Variables:
 

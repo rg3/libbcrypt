@@ -1,15 +1,21 @@
 This library is a simple wrapper providing a convenient reentrant interface for
 the bcrypt password hashing algorithm implementation as provided by Solar
 Designer at http://www.openwall.com/crypt/. An exact copy of that source code
-is included in the crypt_blowfish subdirectory.
+is included in the crypt_blowfish subdirectory. The library should build and
+work in Linux and OpenBSD.
 
 The provided C interface is inspired in the bcrypt Python module that can be
-found at http://code.google.com/p/py-bcrypt/, and consists of a function to
+found at https://pypi.python.org/pypi/bcrypt/, and consists of a function to
 generate salts with the characteristic work factor parameter, one to generate
 password hashes which can also used to verify passwords and one designed
-specifically to verify passwords and avoid timing attacks. Please check the
-header bcrypt.h and the generated manpage. Both mention the prototypes, describe
-what they do and include examples.
+specifically to verify passwords and avoid timing attacks.
+
+Additional functions are provided to pre-hash passwords with SHA-512 and
+SHA3-512, which is a common approach to avoid the 72-character limit of the
+bcrypt implementation.
+
+Please check the header bcrypt.h and the generated manpage. Both mention the
+prototypes, describe what they do and include examples.
 
 The INSTALL file explains how to build and install the library from its source
 code and lists the requirements for doing so.

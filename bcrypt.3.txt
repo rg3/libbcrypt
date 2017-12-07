@@ -102,7 +102,8 @@ bcrypt hash instead of ignoring everyting after the 72nd byte.
 One solution to this problem is pre-hashing the password with a secure and fast
 cryptographic hash function, and use the resulting digest, or a textual
 representation of it, as the effective password. This scheme was in use in
-September 2016 by Dropbox and received positive criticism.
+September 2016 by Dropbox and received positive criticism, gaining popularity
+and becoming a common approach if it wasn't previously.
 
 Dropbox was hashing the passwords first with SHA-512. The resulting binary
 digest may contain null characters and cannot be used as a text string. As per
