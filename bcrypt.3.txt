@@ -22,11 +22,11 @@ int bcrypt_hashpw(const char *passwd,
 
 int bcrypt_checkpw(const char *passwd, const char hash[BCRYPT_HASHSIZE]);
 
-int bcrypt_sha512_base64(const char *passwd,
-	                 char digest[BCRYPT_512BITS_BASE64_SIZE]);
+int bcrypt_sha512(const char *passwd,
+                  char digest[BCRYPT_512BITS_BASE64_SIZE]);
 
-int bcrypt_sha3_512_base64(const char *passwd,
-			   char digest[BCRYPT_512BITS_BASE64_SIZE]);
+int bcrypt_sha3_512(const char *passwd,
+                    char digest[BCRYPT_512BITS_BASE64_SIZE]);
 ---------------------------------------
 
 Compilation and linkage
@@ -66,20 +66,20 @@ Do note the generated hashes are null-terminated strings that can be printed or
 stored and they include the salt information. There is no need to store the salt
 separately. Hence, verifying a password only needs the hash string.
 
-The function _bcrypt_sha512_base64_ can be used to get the base64 representation
-of the SHA-512 digest of the password _passwd_. This digest can be used as a
+The function _bcrypt_sha512_ can be used to get the base64 representation of the
+SHA-512 digest of the password _passwd_. This digest can be used as a
 replacement for the password itself to avoid DoS attacks with long passwords and
 to overcome the character limit of the bcrypt implementation. Please see the
 *CAVEATS* and *EXAMPLES* sections for more details.
 
-The function _bcrypt_sha3_512_base64_ is identical to the previous one but uses
+The function _bcrypt_sha3_512_ is identical to the previous one but uses
 SHA3-512 instead of SHA-512.
 
 RETURN VALUE
 ------------
 
-Both _bcrypt_gensalt_, _bcrypt_hashpw_, _bcrypt_sha512_base64_ and
-_bcrypt_sha3_512_base64_ return zero on success and nonzero on errors.
+Both _bcrypt_gensalt_, _bcrypt_hashpw_, _bcrypt_sha512_ and _bcrypt_sha3_512_
+return zero on success and nonzero on errors.
 
 _bcrypt_checkpw_ will return -1 on errors, zero if the provided password matches
 the given hash and a value greater than zero if the password and hashes do not match.
@@ -117,11 +117,11 @@ having at most 432 bits of entropy. In the process, this scheme avoids possible
 DoS attacks and lets different passwords, even with a common 72-byte prefix, be
 considered different.
 
-The _bcrypt_sha512_base64_ and _bcrypt_sha3_512_base64_ functions are provided
-with the goal of letting you replicate that scheme. The first one hashes the
-given password with SHA-512 and is the "conservative" choice. The second one
-uses the newer SHA3-512 algorithm and should also be fine. Both output the
-digest as a null-terminated base64 string that can be feeded directly to bcrypt.
+The _bcrypt_sha512_ and _bcrypt_sha3_512_ functions are provided with the goal
+of letting you replicate that scheme. The first one hashes the given password
+with SHA-512 and is the "conservative" choice. The second one uses the newer
+SHA3-512 algorithm and should also be fine. Both output the digest as a
+null-terminated base64 string that can be feeded directly to bcrypt.
 
 SHA-512, SHA3-512 and the base64 routine are implemented in software, with
 reasonable performance. SHA3-512 is much slower than SHA-512, but their
@@ -182,7 +182,7 @@ ret = bcrypt_gensalt(BCRYPT_DEFAULT_WORK_FACTOR, salt);
 if (ret != 0)
     // Handle the error here.
 
-ret = bcrypt_sha512_base64("thepassword", digest);
+ret = bcrypt_sha512("thepassword", digest);
 if (ret != 0)
     // Handle another error here.
 
@@ -203,7 +203,7 @@ int ret;
 
 // Read the hash somewhere here and store it in the `hash' buffer.
 
-ret = bcrypt_sha512_base64("thepassword", digest);
+ret = bcrypt_sha512("thepassword", digest);
 if (ret != 0)
     // Handle the error here.
 

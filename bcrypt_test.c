@@ -56,11 +56,11 @@ int main(void)
 	ret = bcrypt_checkpw(pass, hash2);
 	assert(ret == 0);
 
-	ret = bcrypt_sha512_base64(pass, digest1);
+	ret = bcrypt_sha512(pass, digest1);
 	assert(ret == 0);
 	assert(strcmp(digest1, sha512) == 0);
 
-	ret = bcrypt_sha3_512_base64(pass, digest2);
+	ret = bcrypt_sha3_512(pass, digest2);
 	assert(ret == 0);
 	assert(strcmp(digest2, sha3_512) == 0);
 

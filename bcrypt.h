@@ -78,15 +78,15 @@ int bcrypt_checkpw(const char *passwd, const char hash[BCRYPT_HASHSIZE]);
  *
  * It will return zero if no problems were encountered and nonzero otherwise.
  */
-int bcrypt_sha512_base64(const char *passwd,
-	                 char digest[BCRYPT_512BITS_BASE64_SIZE]);
+int bcrypt_sha512(const char *passwd,
+		  char digest[BCRYPT_512BITS_BASE64_SIZE]);
 
 /*
  * This function is identical to the one above, but it uses SHA3-512 instead of
  * SHA-512.
  */
-int bcrypt_sha3_512_base64(const char *passwd,
-			   char digest[BCRYPT_512BITS_BASE64_SIZE]);
+int bcrypt_sha3_512(const char *passwd,
+		    char digest[BCRYPT_512BITS_BASE64_SIZE]);
 
 /*
  * Brief Example

@@ -96,7 +96,7 @@ BCRYPT_API int bcrypt_checkpw(const char *passwd, const char hash[BCRYPT_HASHSIZ
 	return timing_safe_strcmp(hash, outhash);
 }
 
-BCRYPT_API int bcrypt_sha512_base64(const char *in, char digest[BCRYPT_512BITS_BASE64_SIZE])
+BCRYPT_API int bcrypt_sha512(const char *in, char digest[BCRYPT_512BITS_BASE64_SIZE])
 {
 	unsigned char bindigest[BYTES_IN_512BITS];
 	size_t len = strlen(in);
@@ -109,7 +109,7 @@ BCRYPT_API int bcrypt_sha512_base64(const char *in, char digest[BCRYPT_512BITS_B
 	return 0;
 }
 
-BCRYPT_API int bcrypt_sha3_512_base64(const char *in, char digest[BCRYPT_512BITS_BASE64_SIZE])
+BCRYPT_API int bcrypt_sha3_512(const char *in, char digest[BCRYPT_512BITS_BASE64_SIZE])
 {
 	unsigned char bindigest[BYTES_IN_512BITS];
 	size_t len = strlen(in);
