@@ -29,7 +29,7 @@ static void base64_block(const unsigned char *in, size_t len, char out[4])
 	out[3] = ((len <= 2)?'=':base64_table[index[3]]);
 }
 
-void base64_calc(const unsigned char *in, size_t len, char *out)
+void bcrypt_base64_calc(const unsigned char *in, size_t len, char *out)
 {
 	size_t i, used, output_used, remaining;
 

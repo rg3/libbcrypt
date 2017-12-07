@@ -104,8 +104,8 @@ BCRYPT_API int bcrypt_sha512(const char *in, char digest[BCRYPT_512BITS_BASE64_S
 	if (len > ULONG_MAX)
 		return 1;
 
-	sha512_calc(in, (unsigned long)len, (char *)bindigest);
-	base64_calc(bindigest, sizeof(bindigest), digest);
+	bcrypt_sha512_calc(in, (unsigned long)len, (char *)bindigest);
+	bcrypt_base64_calc(bindigest, sizeof(bindigest), digest);
 	return 0;
 }
 
@@ -117,7 +117,7 @@ BCRYPT_API int bcrypt_sha3_512(const char *in, char digest[BCRYPT_512BITS_BASE64
 	if(len > ULLONG_MAX)
 		return 1;
 
-	FIPS202_SHA3_512((const u8 *)in, (u64)len, bindigest);
-	base64_calc(bindigest, sizeof(bindigest), digest);
+	bcrypt_sha3_512_calc((const u8 *)in, (u64)len, bindigest);
+	bcrypt_base64_calc(bindigest, sizeof(bindigest), digest);
 	return 0;
 }

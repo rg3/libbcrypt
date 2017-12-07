@@ -3,7 +3,8 @@
  *
  * https://github.com/gvanas/KeccakCodePackage/blob/8528aeb82acffa09ae76025e96a2cae8440e7b85/Standalone/CompactFIPS202/C/Keccak-more-compact.c
  *
- * The typedefs have been moved to keccak.h together some prototypes.
+ * The typedefs have been moved to keccak.h and only the SHA3-512 variant
+ * remains.
  */
 
 #include "keccak.h"
@@ -12,12 +13,7 @@ static void Keccak(ui r, ui c, const u8 *in, u64 inLen, u8 sfx, u8 *out, u64 out
 static int LFSR86540(u8 *R);
 static void KeccakF1600(void *s);
 
-void FIPS202_SHAKE128(const u8 *in, u64 inLen, u8 *out, u64 outLen) { Keccak(1344, 256, in, inLen, 0x1F, out, outLen); }
-void FIPS202_SHAKE256(const u8 *in, u64 inLen, u8 *out, u64 outLen) { Keccak(1088, 512, in, inLen, 0x1F, out, outLen); }
-void FIPS202_SHA3_224(const u8 *in, u64 inLen, u8 *out) { Keccak(1152, 448, in, inLen, 0x06, out, 28); }
-void FIPS202_SHA3_256(const u8 *in, u64 inLen, u8 *out) { Keccak(1088, 512, in, inLen, 0x06, out, 32); }
-void FIPS202_SHA3_384(const u8 *in, u64 inLen, u8 *out) { Keccak(832, 768, in, inLen, 0x06, out, 48); }
-void FIPS202_SHA3_512(const u8 *in, u64 inLen, u8 *out) { Keccak(576, 1024, in, inLen, 0x06, out, 64); }
+void bcrypt_sha3_512_calc(const u8 *in, u64 inLen, u8 *out) { Keccak(576, 1024, in, inLen, 0x06, out, 64); }
 
 static int LFSR86540(u8 *R) { (*R)=((*R)<<1)^(((*R)&0x80)?0x71:0); return ((*R)&2)>>1; }
 #define FOR(i,n) for(i=0; i<n; ++i)

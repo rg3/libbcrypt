@@ -4,7 +4,7 @@
  * http://git.musl-libc.org/cgit/musl/tree/src/crypt/crypt_sha512.c?id=4000b0107ddd7fe733fa31d4f078c6fcd35851d6
  *
  * We only use the digest functions, so I have removed the crypt part. I have
- * added the sha512_calc wrapper function for our simple case.
+ * added the bcrypt_sha512_calc wrapper function for our simple case.
  */
 #include "sha512.h"
 
@@ -184,7 +184,7 @@ static void sha512_update(struct sha512 *s, const void *m, unsigned long len)
         memcpy(s->buf, p, len);
 }
 
-void sha512_calc(const void *in, unsigned long len, char *sum)
+void bcrypt_sha512_calc(const void *in, unsigned long len, char *sum)
 {
 	struct sha512 s;
 	sha512_init(&s);
