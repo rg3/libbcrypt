@@ -8,8 +8,8 @@ CRYPT_BLOWFISH_LIB = $(CRYPT_BLOWFISH_DIR)/$(CRYPT_BLOWFISH_DIR).a
 CC = $(shell grep '^CC = ' $(CRYPT_BLOWFISH_DIR)/Makefile | cut -d= -f2-)
 
 # Compiler flags.
-EXTRA_CFLAGS = -fPIC -fvisibility=hidden
-CFLAGS = $(shell grep '^CFLAGS = ' $(CRYPT_BLOWFISH_DIR)/Makefile | cut -d= -f2-) $(EXTRA_CFLAGS)
+CFLAGS = $(shell grep '^CFLAGS = ' $(CRYPT_BLOWFISH_DIR)/Makefile | cut -d= -f2-)
+override CFLAGS += -fPIC -fvisibility=hidden
 
 # Library version.
 BCRYPT_MAJOR = 1
