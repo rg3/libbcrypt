@@ -43,12 +43,14 @@ else
     LIBDIRNAME = lib
 endif
 
-DESTDIR ?=
-PREFIX ?= /usr/local
-MANDIR ?= $(PREFIX)/share/man
-INCLUDEDIR ?= $(PREFIX)/include
-LIBDIR ?= $(PREFIX)/$(LIBDIRNAME)
+# These may be set by the user on the command line.
+DESTDIR =
+PREFIX = /usr/local
+MANDIR = $(PREFIX)/share/man
+INCLUDEDIR = $(PREFIX)/include
+LIBDIR = $(PREFIX)/$(LIBDIRNAME)
 
+# Derived from the previous ones.
 INCLUDESUBDIR = $(INCLUDEDIR)/$(BCRYPT_BASENAME)
 MAN3DIR = $(MANDIR)/man3
 PKGCONFIGDIR = $(LIBDIR)/pkgconfig
