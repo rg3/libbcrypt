@@ -78,7 +78,7 @@ all: $(BCRYPT_SOFILE) $(BCRYPT_LAFILE) $(BCRYPT_MANPAGE) $(BCRYPT_PCFILE) $(BCRY
 .PHONY: test
 test: $(BCRYPT_BASENAME)_test
 	@set -e ; \
-	    $(MAKE) CFLAGS="$(CFLAGS)" -C $(CRYPT_BLOWFISH_DIR) check check_threads ; \
+	    $(MAKE) CC="$(CC)" CFLAGS="$(CFLAGS)" -C $(CRYPT_BLOWFISH_DIR) check check_threads ; \
 	    for prog in $^; do \
 	        ./$$prog ; \
 	    done
@@ -99,8 +99,8 @@ FORCE:
 
 $(CRYPT_BLOWFISH_LIB): FORCE
 	@set -e ; \
-	    $(MAKE) -q CFLAGS="$(CFLAGS)" -C $(CRYPT_BLOWFISH_DIR) || \
-	    ( $(MAKE) CFLAGS="$(CFLAGS)" -C $(CRYPT_BLOWFISH_DIR) && \
+	    $(MAKE) -q CC="$(CC)" CFLAGS="$(CFLAGS)" -C $(CRYPT_BLOWFISH_DIR) || \
+	    ( $(MAKE) CC="$(CC)" CFLAGS="$(CFLAGS)" -C $(CRYPT_BLOWFISH_DIR) && \
 	      ar Dr $@ $(CRYPT_BLOWFISH_OBJ) && ranlib -D $@ )
 
 $(BCRYPT_BASENAME)_test.c: $(BCRYPT_HEADER)
