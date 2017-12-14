@@ -68,9 +68,9 @@ separately. Hence, verifying a password only needs the hash string.
 
 The function _bcrypt_sha512_ can be used to get the base64 representation of the
 SHA-512 digest of the password _passwd_. This digest can be used as a
-replacement for the password itself to avoid DoS attacks with long passwords and
-to overcome the character limit of the bcrypt implementation. Please see the
-*CAVEATS* and *EXAMPLES* sections for more details.
+replacement for the password itself to overcome the character limit of the
+bcrypt implementation. Please see the *CAVEATS* and *EXAMPLES* sections for more
+details.
 
 The function _bcrypt_sha3_512_ is identical to the previous one but uses
 SHA3-512 instead of SHA-512.
@@ -115,9 +115,8 @@ secure as a password.
 
 Using this scheme, you can allow users to type very long passwords or
 passphrases with varied entropy and compress that entropy very fast to something
-having at most 432 bits of entropy. In the process, this scheme avoids possible
-DoS attacks and lets different passwords, even with a common 72-byte prefix, be
-considered different.
+having at most 432 bits of entropy. This scheme lets different passwords, even
+with a common 72-byte prefix, be considered different.
 
 The _bcrypt_sha512_ and _bcrypt_sha3_512_ functions are provided with the goal
 of letting you replicate that scheme. The first one hashes the given password
