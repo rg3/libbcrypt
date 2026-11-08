@@ -27,8 +27,8 @@ Variables:
 * PREFIX, which is /usr/local by default.
 * MANDIR, which is $(PREFIX)/share/man by default.
 * INCLUDEDIR, which is $(PREFIX)/include by default.
-* LIBDIR, which is $(PREFIX)/lib64 by default if that directory exists, or
-  $(PREFIX)/lib otherwise.
+* LIBDIR, which is $(PREFIX)/lib64 by default if the system C library is in a
+  lib64 directory (like in Fedora), or $(PREFIX)/lib otherwise.
 * PKGCONFIGDIR, which is $(LIBDIR)/pkgconfig by default, or
   $(PREFIX)/libdata/pkgconfig in FreeBSD.
 
@@ -39,7 +39,8 @@ Only needed in the installation step:
 When cross-compiling, set CC, AR and OBJCOPY to the tools for the target
 system, for example:
 
-make CC=aarch64-linux-gnu-gcc AR=aarch64-linux-gnu-ar OBJCOPY=aarch64-linux-gnu-objcopy
+make CC=aarch64-linux-gnu-gcc AR=aarch64-linux-gnu-ar \
+     OBJCOPY=aarch64-linux-gnu-objcopy
 
 You could also set CFLAGS but, by default, the ones provided by Solar Designer
 at crypt_blowfish/Makefile are used. Personally, I recommend to keep them as

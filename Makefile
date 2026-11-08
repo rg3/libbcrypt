@@ -64,9 +64,12 @@ PREFIX = /usr/local
 MANDIR = $(PREFIX)/share/man
 INCLUDEDIR = $(PREFIX)/include
 
-# Use lib64 if the system already has that directory under the prefix (e.g.
-# Fedora and derivatives), and lib otherwise (e.g. Debian and the BSDs).
-LIBDIR = $(PREFIX)/$(if $(wildcard $(PREFIX)/lib64/.),lib64,lib)
+# Use lib64 if the system C library is in a lib64 directory (e.g. Fedora and
+# derivatives), and lib otherwise (e.g. Debian and the BSDs). Checking for an
+# existing lib64 directory is not enough, as Debian has /usr/lib64 only for
+# the dynamic loader.
+SYSTEM_LIBC_DIR := $(patsubst %/,%,$(dir $(realpath $(shell $(CC) $(CFLAGS) -print-file-name=libc.so 2>/dev/null))))
+LIBDIR = $(PREFIX)/$(if $(filter lib64,$(notdir $(SYSTEM_LIBC_DIR))),lib64,lib)
 
 # FreeBSD expects pkg-config files in libdata instead of the library directory.
 ifeq ($(shell uname -s),FreeBSD)
