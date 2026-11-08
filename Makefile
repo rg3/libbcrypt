@@ -168,3 +168,13 @@ install: all
 	install -m 644 $(BCRYPT_PCFILE) $(DESTDIR)$(PKGCONFIGDIR)
 	$(call make_lib_links,$(DESTDIR)$(LIBDIR))
 	$(call make_man_links,$(DESTDIR)$(MAN3DIR))
+
+# Removes the files installed by the install target. The shared directories
+# are kept, except for the header subdirectory if it ends up empty.
+.PHONY: uninstall
+uninstall:
+	rm -f $(addprefix $(DESTDIR)$(LIBDIR)/,$(BCRYPT_SOFILE) $(BCRYPT_SONAME) $(BCRYPT_LDNAME) $(BCRYPT_LAFILE))
+	rm -f $(DESTDIR)$(INCLUDESUBDIR)/$(BCRYPT_HEADER)
+	rm -f $(addprefix $(DESTDIR)$(MAN3DIR)/,$(BCRYPT_MANPAGE) $(BCRYPT_MANPAGE_LINKS))
+	rm -f $(DESTDIR)$(PKGCONFIGDIR)/$(BCRYPT_PCFILE)
+	rmdir $(DESTDIR)$(INCLUDESUBDIR) 2>/dev/null || true

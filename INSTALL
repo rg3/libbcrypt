@@ -8,6 +8,9 @@ make
 make test
 make install # Usually as root.
 
+To remove the installed files, run "make uninstall" with the same variables
+used for "make install".
+
 When running make, you can set values for several variables to modify
 compilation, installation and meta-information paths. If you do, you need to
 include them in *every* call to make.
