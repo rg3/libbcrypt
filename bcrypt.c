@@ -72,7 +72,7 @@ BCRYPT_API int bcrypt_gensalt(int factor, char salt[BCRYPT_HASHSIZE])
 
 	/* Generate salt. */
 	workf = (factor < 4 || factor > 31)?BCRYPT_DEFAULT_WORK_FACTOR:factor;
-	aux = crypt_gensalt_rn("$2a$", workf, input, RANDBYTES,
+	aux = crypt_gensalt_rn("$2b$", workf, input, RANDBYTES,
 			       salt, BCRYPT_HASHSIZE);
 	return (aux == NULL)?2:0;
 }

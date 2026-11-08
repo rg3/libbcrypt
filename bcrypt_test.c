@@ -23,6 +23,7 @@ int main(void)
 
 	ret = bcrypt_gensalt(BCRYPT_DEFAULT_WORK_FACTOR, salt);
 	assert(ret == 0);
+	assert(strncmp(salt, "$2b$", 4) == 0);
 	printf("Generated salt: %s\n", salt);
 
 	before = clock();
