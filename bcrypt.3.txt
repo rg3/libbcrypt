@@ -192,6 +192,12 @@ reproduces the buggy behavior of the first case, or *$2y$*, which is valid for
 the second case. If either succeeds, hash the password again with a new salt and
 replace the stored hash. Do not keep accepting *$2x$* hashes permanently.
 
+Separately, versions from April to August 2011 had a bug that made
+_bcrypt_gensalt_ generate salts from uninitialized memory instead of random
+bytes. Hashes created with those versions still verify, but their salts may be
+repeated or predictable, which makes them weaker. Replace them with new hashes
+when users log in.
+
 DEPRECATED FUNCTIONS
 --------------------
 
