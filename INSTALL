@@ -1,7 +1,8 @@
 Installing from source requires asciidoc (for a2x), probably DocBook DTD files,
-GNU Make and GCC or a compatible compiler. "make" is usually GNU Make in destkop
-Linux distributions, but you may have to call it as "gmake" in other systems.
-Quick guide:
+GNU Make, GCC or a compatible compiler (like Clang), and the ar, ld and objcopy
+tools (from GNU binutils, LLVM or your system). "make" is usually GNU Make in
+desktop Linux distributions, but you may have to call it as "gmake" in other
+systems, like the BSDs. Quick guide:
 
 make
 make test
@@ -13,11 +14,18 @@ include them in *every* call to make.
 
 Variables:
 
-* CC to set the C compiler.
+* CC to set the C compiler. gcc by default, or cc if gcc is not available.
+* LDFLAGS for additional linker flags, empty by default.
+* AR, ARFLAGS and OBJCOPY to set the archiver, its flags and objcopy. ARFLAGS
+  is rcsD by default. If your ar does not support the D (deterministic) flag,
+  use ARFLAGS=rcs.
 * PREFIX, which is /usr/local by default.
 * MANDIR, which is $(PREFIX)/share/man by default.
 * INCLUDEDIR, which is $(PREFIX)/include by default.
-* LIBDIR, which is $(PREFIX)/lib or $(PREFIX/lib64 by default.
+* LIBDIR, which is $(PREFIX)/lib64 by default if that directory exists, or
+  $(PREFIX)/lib otherwise.
+* PKGCONFIGDIR, which is $(LIBDIR)/pkgconfig by default, or
+  $(PREFIX)/libdata/pkgconfig in FreeBSD.
 
 Only needed in the installation step:
 

@@ -4,12 +4,22 @@ CRYPT_BLOWFISH_SRC = $(sort $(wildcard $(CRYPT_BLOWFISH_DIR)/*.[cS]))
 CRYPT_BLOWFISH_OBJ = $(patsubst %.S,%.o,$(CRYPT_BLOWFISH_SRC:%.c=%.o))
 CRYPT_BLOWFISH_LIB = $(CRYPT_BLOWFISH_DIR)/$(CRYPT_BLOWFISH_DIR).a
 
-# Compiler.
-CC = $(shell grep '^CC = ' $(CRYPT_BLOWFISH_DIR)/Makefile | cut -d= -f2-)
+# Compiler. Use the one from crypt_blowfish (gcc) if available, falling back to
+# cc in systems without it, like most BSDs.
+CRYPT_BLOWFISH_CC := $(strip $(shell grep '^CC = ' $(CRYPT_BLOWFISH_DIR)/Makefile | cut -d= -f2-))
+CC := $(if $(shell command -v $(CRYPT_BLOWFISH_CC) 2>/dev/null),$(CRYPT_BLOWFISH_CC),cc)
 
 # Compiler flags.
 CFLAGS = $(shell grep '^CFLAGS = ' $(CRYPT_BLOWFISH_DIR)/Makefile | cut -d= -f2-)
 override CFLAGS += -fPIC -fvisibility=hidden
+
+# Linker flags, empty by default.
+LDFLAGS =
+
+# Other tools. Old versions of ar may not support the D (deterministic) flag.
+AR = ar
+ARFLAGS = rcsD
+OBJCOPY = objcopy
 
 # Library version.
 BCRYPT_MAJOR = 1
@@ -32,28 +42,35 @@ BCRYPT_HEADER = $(BCRYPT_BASENAME).h
 BCRYPT_PCFILE = $(BCRYPT_LIBNAME).pc
 BCRYPT_OBJS = $(BCRYPT_BASENAME).o keccak.o base64.o sha512.o
 
-# Installation variables.
+# All library code (ours and crypt_blowfish) is merged into this object file.
+# Every symbol except the public ones is made local, so the static library does
+# not expose crypt_blowfish functions like crypt() that would clash with the
+# system ones. Keep this list in sync with bcrypt.h.
+BCRYPT_ALL_OBJ = $(BCRYPT_LIBNAME)_all.o
+BCRYPT_EXPORTS = bcrypt_gensalt bcrypt_hashpw bcrypt_checkpw bcrypt_sha512 bcrypt_sha3_512
 
-# This is the most common convention. It is used for LIBDIR, which can be
-# overridden completely below.
-MACHINE = $(shell uname -m)
-ifeq ($(MACHINE),x86_64)
-    LIBDIRNAME = lib64
-else
-    LIBDIRNAME = lib
-endif
+# Installation variables.
 
 # These may be set by the user on the command line.
 DESTDIR =
 PREFIX = /usr/local
 MANDIR = $(PREFIX)/share/man
 INCLUDEDIR = $(PREFIX)/include
-LIBDIR = $(PREFIX)/$(LIBDIRNAME)
+
+# Use lib64 if the system already has that directory under the prefix (e.g.
+# Fedora and derivatives), and lib otherwise (e.g. Debian and the BSDs).
+LIBDIR = $(PREFIX)/$(if $(wildcard $(PREFIX)/lib64/.),lib64,lib)
+
+# FreeBSD expects pkg-config files in libdata instead of the library directory.
+ifeq ($(shell uname -s),FreeBSD)
+    PKGCONFIGDIR = $(PREFIX)/libdata/pkgconfig
+else
+    PKGCONFIGDIR = $(LIBDIR)/pkgconfig
+endif
 
 # Derived from the previous ones.
 INCLUDESUBDIR = $(INCLUDEDIR)/$(BCRYPT_BASENAME)
 MAN3DIR = $(MANDIR)/man3
-PKGCONFIGDIR = $(LIBDIR)/pkgconfig
 
 #
 # Macros and rules.
@@ -84,28 +101,36 @@ test: $(BCRYPT_BASENAME)_test
 	    done
 
 $(BCRYPT_BASENAME)_test: $(BCRYPT_BASENAME)_test.o $(BCRYPT_LAFILE)
-	$(CC) -o $@ $^
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^
 
 $(BCRYPT_LDNAME) $(BCRYPT_SONAME): $(BCRYPT_SOFILE)
 	$(call make_lib_links,.)
 
-$(BCRYPT_SOFILE): $(BCRYPT_OBJS) $(CRYPT_BLOWFISH_LIB)
-	$(CC) $(EXTRA_CFLAGS) -shared -Wl,-soname,$(BCRYPT_SONAME) -o $@ $^
+$(BCRYPT_SOFILE): $(BCRYPT_ALL_OBJ)
+	$(CC) $(CFLAGS) $(LDFLAGS) -shared -Wl,-soname,$(BCRYPT_SONAME) -o $@ $^
 
-$(BCRYPT_LAFILE): $(BCRYPT_OBJS) $(CRYPT_BLOWFISH_LIB)
-	ar Dr $@ $(BCRYPT_OBJS) $(CRYPT_BLOWFISH_OBJ) && ranlib -D $@
+$(BCRYPT_LAFILE): $(BCRYPT_ALL_OBJ)
+	rm -f $@ && $(AR) $(ARFLAGS) $@ $^
+
+$(BCRYPT_ALL_OBJ): $(BCRYPT_OBJS) $(CRYPT_BLOWFISH_LIB)
+	$(CC) -nostdlib -r -o $@ $(BCRYPT_OBJS) $(CRYPT_BLOWFISH_OBJ)
+	$(OBJCOPY) $(addprefix --keep-global-symbol=,$(BCRYPT_EXPORTS)) $@
 
 FORCE:
 
+# The archive is only used as a timestamp to know if crypt_blowfish changed.
 $(CRYPT_BLOWFISH_LIB): FORCE
 	@set -e ; \
 	    $(MAKE) -q CC="$(CC)" CFLAGS="$(CFLAGS)" -C $(CRYPT_BLOWFISH_DIR) || \
 	    ( $(MAKE) CC="$(CC)" CFLAGS="$(CFLAGS)" -C $(CRYPT_BLOWFISH_DIR) && \
-	      ar Dr $@ $(CRYPT_BLOWFISH_OBJ) && ranlib -D $@ )
+	      rm -f $@ && $(AR) $(ARFLAGS) $@ $(CRYPT_BLOWFISH_OBJ) )
 
-$(BCRYPT_BASENAME)_test.c: $(BCRYPT_HEADER)
-
-%.c: %.h
+# Header dependencies.
+$(BCRYPT_BASENAME).o: $(BCRYPT_HEADER) sha512.h keccak.h base64.h $(CRYPT_BLOWFISH_DIR)/ow-crypt.h
+$(BCRYPT_BASENAME)_test.o: $(BCRYPT_HEADER)
+keccak.o: keccak.h
+base64.o: base64.h
+sha512.o: sha512.h
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $<
@@ -113,19 +138,21 @@ $(BCRYPT_BASENAME)_test.c: $(BCRYPT_HEADER)
 $(BCRYPT_MANPAGE): $(BCRYPT_MANPAGE_SOURCE)
 	a2x --doctype manpage --format manpage $<
 
-$(BCRYPT_PCFILE):
+# Always regenerated, so it reflects the current installation paths, but only
+# replaced when its contents change.
+$(BCRYPT_PCFILE): FORCE
 	@set -e ; \
-	    >$@ ; \
-	    echo "Name: $(BCRYPT_BASENAME)" >>$@ ; \
-	    echo "Description: bcrypt password hash C library" >>$@ ; \
-	    echo "Version: $(BCRYPT_MAJOR).$(BCRYPT_MINOR).$(BCRYPT_PATCH)" >>$@ ; \
-	    echo "Cflags: -I$(INCLUDESUBDIR)" >>$@ ; \
-	    echo "Libs: -L$(LIBDIR) -l$(BCRYPT_BASENAME)" >>$@ ; \
-	    :
+	    { echo "Name: $(BCRYPT_BASENAME)" ; \
+	      echo "Description: bcrypt password hash C library" ; \
+	      echo "Version: $(BCRYPT_MAJOR).$(BCRYPT_MINOR).$(BCRYPT_PATCH)" ; \
+	      echo "Cflags: -I$(INCLUDESUBDIR)" ; \
+	      echo "Libs: -L$(LIBDIR) -l$(BCRYPT_BASENAME)" ; \
+	    } >$@.tmp ; \
+	    if cmp -s $@.tmp $@ ; then rm -f $@.tmp ; else mv -f $@.tmp $@ ; fi
 
 .PHONY: clean
 clean:
-	rm -f *.o $(BCRYPT_BASENAME)_test $(BCRYPT_SOFILE) $(BCRYPT_LAFILE) $(BCRYPT_SONAME) $(BCRYPT_LDNAME) $(BCRYPT_MANPAGE) $(BCRYPT_PCFILE) *~ core
+	rm -f *.o $(BCRYPT_BASENAME)_test $(BCRYPT_SOFILE) $(BCRYPT_LAFILE) $(BCRYPT_SONAME) $(BCRYPT_LDNAME) $(BCRYPT_MANPAGE) $(BCRYPT_PCFILE) $(BCRYPT_PCFILE).tmp $(CRYPT_BLOWFISH_LIB) *~ core
 	$(MAKE) -C $(CRYPT_BLOWFISH_DIR) clean
 
 .PHONY: install
