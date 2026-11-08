@@ -18,7 +18,7 @@
 #define BCRYPT_DEFAULT_WORK_FACTOR (12)
 
 /*
- * Length of a null-terminated string containing a base64 representantion of
+ * Length of a null-terminated string containing a base64 representation of
  * 512 bits. Rounded up to a pretty number.
  */
 #define BCRYPT_512BITS_BASE64_SIZE (90)
