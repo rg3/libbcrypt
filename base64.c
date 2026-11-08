@@ -6,7 +6,7 @@
 #include "base64.h"
 
 static char base64_table[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-static void base64_block(const unsigned char *in, size_t len, char *out);
+static void base64_block(const unsigned char *in, size_t len, char out[4]);
 
 static void base64_block(const unsigned char *in, size_t len, char out[4])
 {
