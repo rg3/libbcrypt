@@ -98,8 +98,11 @@ int bcrypt_checkpw(const char *passwd, const char *hash);
  *
  * The pre-hash is calculated over a fixed tag ("libbcrypt-sha512-v1:" or
  * "libbcrypt-sha3-512-v1:"), followed by the 22 salt characters that come
- * after the "$2b$NN$" prefix, followed by the password. Its base64
- * representation is then hashed with bcrypt using the same salt. Including the
+ * after the "$2b$NN$" prefix, followed by the password. The salt characters
+ * are taken as they appear in the generated hash: bcrypt normalizes the last
+ * one, which only carries 2 bits, to '.', 'O', 'e' or 'u'. The base64
+ * representation of the pre-hash is then hashed with bcrypt using the same
+ * salt. Including the
  * salt makes the pre-hash unique to each hash, so leaked unsalted hashes of the
  * same password from other systems cannot be used against it.
  *

@@ -92,6 +92,20 @@ int main(void)
 	assert(bcrypt_checkpw_sha512(pass, "garbage") == -1);
 	assert(bcrypt_checkpw_sha3_512(pass, "") == -1);
 
+	/*
+	 * The last salt character is normalized like bcrypt does, so a salt
+	 * ending in 'v' gives the same hashes as one ending in 'u'.
+	 */
+	ret = bcrypt_hashpw_sha512(pass, "$2b$04$abcdefghijklmnopqrstuv", hash);
+	assert(ret == 0);
+	assert(strcmp(hash, hash_sha512) == 0);
+	assert(bcrypt_checkpw_sha512(pass, hash) == 0);
+	ret = bcrypt_hashpw_sha3_512(pass, "$2b$04$abcdefghijklmnopqrstuv", hash);
+	assert(ret == 0);
+	assert(strcmp(hash, hash_sha3_512) == 0);
+	assert(bcrypt_checkpw_sha3_512(pass, hash) == 0);
+	assert(bcrypt_hashpw_sha512(pass, "$2b$04$abcdefghijklmnopqrstu!", hash) != 0);
+
 	/* The prefix is not part of the pre-hash, so changing it still works. */
 	strcpy(hash3, hash_sha512);
 	hash3[2] = 'a';

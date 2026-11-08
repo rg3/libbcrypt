@@ -38,6 +38,10 @@
 #define SALT_OFFSET (7)
 #define SALT_LENGTH (22)
 
+/* Characters used by bcrypt in salts and hashes, in value order. */
+static const char bf_itoa64[] =
+	"./ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
 enum prehash_alg {
 	PREHASH_SHA512,
 	PREHASH_SHA3_512
@@ -143,9 +147,27 @@ static int prehash(enum prehash_alg alg, const void *in, size_t len,
 }
 
 /*
+ * The last salt character only carries 2 bits, so bcrypt writes it in a
+ * normalized form in the hashes it generates. Returns that form for the given
+ * character, or '\0' if it is not a valid salt character.
+ */
+static char normalize_last_salt_char(char c)
+{
+	const char *p;
+
+	if (c == '\0')
+		return '\0';
+	p = strchr(bf_itoa64, c);
+	if (p == NULL)
+		return '\0';
+	return bf_itoa64[(p - bf_itoa64) & 0x30];
+}
+
+/*
  * Pre-hashes the password together with a domain separation tag and the salt
- * characters, and hashes the base64 digest with bcrypt using the same salt.
- * Returns zero on success and nonzero otherwise.
+ * characters as they appear in the generated hash, and hashes the base64
+ * digest with bcrypt using the same salt. Returns zero on success and nonzero
+ * otherwise.
  */
 static int hashpw_prehash(enum prehash_alg alg, const char *passwd,
 			  const char *salt, char hash[BCRYPT_HASHSIZE])
@@ -156,10 +178,15 @@ static int hashpw_prehash(enum prehash_alg alg, const char *passwd,
 	size_t total;
 	char *buf;
 	char digest[BCRYPT_512BITS_BASE64_SIZE];
+	char last;
 	int ret;
 
 	if (strlen(salt) < SALT_OFFSET + SALT_LENGTH || salt[0] != '$' ||
 	    salt[1] != '2' || salt[3] != '$' || salt[6] != '$')
+		return 1;
+
+	last = normalize_last_salt_char(salt[SALT_OFFSET + SALT_LENGTH - 1]);
+	if (last == '\0')
 		return 1;
 
 	tag = (alg == PREHASH_SHA512)?PREHASH_SHA512_TAG:PREHASH_SHA3_512_TAG;
@@ -175,6 +202,7 @@ static int hashpw_prehash(enum prehash_alg alg, const char *passwd,
 
 	memcpy(buf, tag, taglen);
 	memcpy(buf + taglen, salt + SALT_OFFSET, SALT_LENGTH);
+	buf[taglen + SALT_LENGTH - 1] = last;
 	memcpy(buf + taglen + SALT_LENGTH, passwd, pwlen);
 	ret = prehash(alg, buf, total, digest);
 	explicit_bzero(buf, total);
