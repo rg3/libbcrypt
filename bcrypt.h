@@ -99,12 +99,14 @@ int bcrypt_sha3_512(const char *passwd,
  *     int ret;
  *
  *     ret = bcrypt_gensalt(BCRYPT_DEFAULT_WORK_FACTOR, salt);
- *     if (ret != 0)
+ *     if (ret != 0) {
  *         // Handle the error here.
+ *     }
  *
  *     ret = bcrypt_hashpw("thepassword", salt, hash);
- *     if (ret != 0)
+ *     if (ret != 0) {
  *         // Handle another error here.
+ *     }
  *
  *     printf("Generated hash: %s\n", hash);
  *
@@ -117,8 +119,9 @@ int bcrypt_sha3_512(const char *passwd,
  *     // Read the hash somewhere here and store it in the `hash' buffer.
  *
  *     ret = bcrypt_checkpw("thepassword", hash);
- *     if (ret == -1)
+ *     if (ret == -1) {
  *         // Handle the error here.
+ *     }
  *
  *     if (ret == 0)
  *         printf("The password matches\n");
@@ -134,16 +137,19 @@ int bcrypt_sha3_512(const char *passwd,
  *     int ret;
  *
  *     ret = bcrypt_sha512("thepassword", digest);
- *     if (ret != 0)
+ *     if (ret != 0) {
  *         // Handle the error here.
+ *     }
  *
  *     ret = bcrypt_gensalt(BCRYPT_DEFAULT_WORK_FACTOR, salt);
- *     if (ret != 0)
+ *     if (ret != 0) {
  *         // Handle another error here.
+ *     }
  *
  *     ret = bcrypt_hashpw(digest, salt, hash);
- *     if (ret != 0)
+ *     if (ret != 0) {
  *         // Handle another error here.
+ *     }
  *
  *     printf("Generated hash: %s\n", hash);
  *
@@ -157,12 +163,14 @@ int bcrypt_sha3_512(const char *passwd,
  *     // Read the hash somewhere here and store it in the `hash' buffer.
  *
  *     ret = bcrypt_sha512("thepassword", digest);
- *     if (ret != 0)
+ *     if (ret != 0) {
  *         // Handle the error here.
+ *     }
  *
  *     ret = bcrypt_checkpw(digest, hash);
- *     if (ret == -1)
+ *     if (ret == -1) {
  *         // Handle another error here.
+ *     }
  *
  *     if (ret == 0)
  *         printf("The password matches\n");
