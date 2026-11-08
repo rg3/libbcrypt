@@ -47,7 +47,8 @@ password with a following call to _bcrypt_hashpw_. Its _workfactor_ argument
 determines how many rounds will be used and the time it will take to hash or
 verify the hashed password. Allowed values range from 4 to 31. If the provided
 work factor is not in the previous range, it will default to
-BCRYPT_DEFAULT_WORK_FACTOR. The _salt_ argument is an output array of chars that
+BCRYPT_DEFAULT_WORK_FACTOR. Note this also applies to values above 31, which
+result in a lower work factor instead of the maximum. The _salt_ argument is an output array of chars that
 will store the generated salt. It must have space for at least BCRYPT_HASHSIZE
 bytes.
 

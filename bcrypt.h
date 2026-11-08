@@ -32,7 +32,9 @@ extern "C" {
  * This function expects a work factor between 4 and 31 and a char array to
  * store the resulting generated salt. The char array should typically have
  * BCRYPT_HASHSIZE bytes at least. If the provided work factor is not in the
- * previous range, it will default to BCRYPT_DEFAULT_WORK_FACTOR.
+ * previous range, it will default to BCRYPT_DEFAULT_WORK_FACTOR. Note this
+ * also applies to values above 31, which result in a lower work factor
+ * instead of the maximum.
  *
  * The return value is zero if the salt could be correctly generated and
  * nonzero otherwise.
