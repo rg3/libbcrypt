@@ -10,9 +10,9 @@ generate salts with the characteristic work factor parameter, one to generate
 password hashes (which can also be used to verify passwords) and one designed
 specifically to verify passwords and avoid timing attacks.
 
-Additional functions are provided to pre-hash passwords with SHA-512 and
-SHA3-512, which is a common approach to avoid the 72-character limit of the
-bcrypt implementation.
+Additional functions are provided to hash and verify passwords using a salted
+SHA-512 or SHA3-512 pre-hash, which avoids the 72-character limit of the bcrypt
+implementation without the weaknesses of a plain unsalted pre-hash.
 
 Please check the header bcrypt.h and the generated manpage. Both mention the
 prototypes, describe what they do and include examples.

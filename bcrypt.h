@@ -24,6 +24,23 @@
 #define BCRYPT_512BITS_BASE64_SIZE (90)
 
 
+/*
+ * Marks deprecated functions. Define BCRYPT_NO_DEPRECATION_WARNINGS before
+ * including this header to silence the warnings, for example in code that
+ * still needs to verify hashes created with the deprecated functions.
+ */
+#if defined(BCRYPT_NO_DEPRECATION_WARNINGS)
+#  define BCRYPT_DEPRECATED(msg)
+#elif defined(__cplusplus) && __cplusplus >= 201402L
+#  define BCRYPT_DEPRECATED(msg) [[deprecated(msg)]]
+#elif defined(__STDC_VERSION__) && __STDC_VERSION__ >= 202311L
+#  define BCRYPT_DEPRECATED(msg) [[deprecated(msg)]]
+#elif defined(__GNUC__) || defined(__clang__)
+#  define BCRYPT_DEPRECATED(msg) __attribute__((deprecated(msg)))
+#else
+#  define BCRYPT_DEPRECATED(msg)
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -75,23 +92,59 @@ int bcrypt_hashpw(const char *passwd, const char *salt,
 int bcrypt_checkpw(const char *passwd, const char *hash);
 
 /*
+ * These functions are like bcrypt_hashpw and bcrypt_checkpw, but they pre-hash
+ * the password so that all of it is taken into account, avoiding the 72-byte
+ * limit of bcrypt. The first two use SHA-512 and the last two use SHA3-512.
+ *
+ * The pre-hash is calculated over a fixed tag ("libbcrypt-sha512-v1:" or
+ * "libbcrypt-sha3-512-v1:"), followed by the 22 salt characters that come
+ * after the "$2b$NN$" prefix, followed by the password. Its base64
+ * representation is then hashed with bcrypt using the same salt. Including the
+ * salt makes the pre-hash unique to each hash, so leaked unsalted hashes of the
+ * same password from other systems cannot be used against it.
+ *
+ * The generated hashes look like regular bcrypt hashes, so you need to keep
+ * track of which function was used to create each one, and verify it with the
+ * matching function.
+ *
+ * Return values are the same as the ones of bcrypt_hashpw and bcrypt_checkpw.
+ */
+int bcrypt_hashpw_sha512(const char *passwd, const char *salt,
+			 char hash[BCRYPT_HASHSIZE]);
+int bcrypt_checkpw_sha512(const char *passwd, const char *hash);
+int bcrypt_hashpw_sha3_512(const char *passwd, const char *salt,
+			   char hash[BCRYPT_HASHSIZE]);
+int bcrypt_checkpw_sha3_512(const char *passwd, const char *hash);
+
+/*
+ * Deprecated: use the functions above to create new hashes. These functions
+ * will remain available to verify existing hashes.
+ *
  * This function expects a password and a char array to leave the result, with
  * at least BCRYPT_512BITS_BASE64_SIZE capacity. It will calculate the SHA-512
  * hash of the given password and output the result as the base64
- * representation of the digest.
+ * representation of the digest, which can be passed to bcrypt_hashpw and
+ * bcrypt_checkpw as the password.
+ *
+ * As the digest is not salted, an attacker who has unsalted SHA-512 hashes of
+ * the same password from other sources can test them against the resulting
+ * bcrypt hashes and, on a match, crack the much faster SHA-512 hash instead.
+ * Never store the digest without hashing it with bcrypt.
  *
  * The digest can be used in place of the password, so it is just as
  * sensitive. Clear it after use, for example with explicit_bzero.
  *
  * It will return zero if no problems were encountered and nonzero otherwise.
  */
+BCRYPT_DEPRECATED("use bcrypt_hashpw_sha512 and bcrypt_checkpw_sha512")
 int bcrypt_sha512(const char *passwd,
 		  char digest[BCRYPT_512BITS_BASE64_SIZE]);
 
 /*
- * This function is identical to the one above, but it uses SHA3-512 instead of
- * SHA-512.
+ * Deprecated: this function is identical to the one above, but it uses
+ * SHA3-512 instead of SHA-512.
  */
+BCRYPT_DEPRECATED("use bcrypt_hashpw_sha3_512 and bcrypt_checkpw_sha3_512")
 int bcrypt_sha3_512(const char *passwd,
 		    char digest[BCRYPT_512BITS_BASE64_SIZE]);
 
@@ -140,21 +193,14 @@ int bcrypt_sha3_512(const char *passwd,
  *
  *     char salt[BCRYPT_HASHSIZE];
  *     char hash[BCRYPT_HASHSIZE];
- *     char digest[BCRYPT_512BITS_BASE64_SIZE];
  *     int ret;
  *
- *     ret = bcrypt_sha512("thepassword", digest);
+ *     ret = bcrypt_gensalt(BCRYPT_DEFAULT_WORK_FACTOR, salt);
  *     if (ret != 0) {
  *         // Handle the error here.
  *     }
  *
- *     ret = bcrypt_gensalt(BCRYPT_DEFAULT_WORK_FACTOR, salt);
- *     if (ret != 0) {
- *         // Handle another error here.
- *     }
- *
- *     ret = bcrypt_hashpw(digest, salt, hash);
- *     explicit_bzero(digest, sizeof(digest));
+ *     ret = bcrypt_hashpw_sha512("thepassword", salt, hash);
  *     if (ret != 0) {
  *         // Handle another error here.
  *     }
@@ -165,10 +211,33 @@ int bcrypt_sha3_512(const char *passwd,
  * Verifying a password using SHA-512 as a pre-hash
  *
  *     char hash[BCRYPT_HASHSIZE];
- *     char digest[BCRYPT_512BITS_BASE64_SIZE];
  *     int ret;
  *
  *     // Read the hash somewhere here and store it in the `hash' buffer.
+ *
+ *     ret = bcrypt_checkpw_sha512("thepassword", hash);
+ *     if (ret == -1) {
+ *         // Handle the error here.
+ *     }
+ *
+ *     if (ret == 0)
+ *         printf("The password matches\n");
+ *     else
+ *         printf("The password does NOT match\n");
+ *
+ *
+ * Migrating a hash created with the deprecated bcrypt_sha512
+ *
+ *     #define BCRYPT_NO_DEPRECATION_WARNINGS
+ *     #include <bcrypt.h>
+ *
+ *     char hash[BCRYPT_HASHSIZE];
+ *     char newhash[BCRYPT_HASHSIZE];
+ *     char salt[BCRYPT_HASHSIZE];
+ *     char digest[BCRYPT_512BITS_BASE64_SIZE];
+ *     int ret;
+ *
+ *     // Read the old hash somewhere here and store it in the `hash' buffer.
  *
  *     ret = bcrypt_sha512("thepassword", digest);
  *     if (ret != 0) {
@@ -181,11 +250,21 @@ int bcrypt_sha3_512(const char *passwd,
  *         // Handle another error here.
  *     }
  *
- *     if (ret == 0)
- *         printf("The password matches\n");
- *     else
- *         printf("The password does NOT match\n");
+ *     if (ret == 0) {
+ *         // The password matches. Replace the old hash with a new one.
+ *         ret = bcrypt_gensalt(BCRYPT_DEFAULT_WORK_FACTOR, salt);
+ *         if (ret != 0) {
+ *             // Handle another error here.
+ *         }
  *
+ *         ret = bcrypt_hashpw_sha512("thepassword", salt, newhash);
+ *         if (ret != 0) {
+ *             // Handle another error here.
+ *         }
+ *
+ *         // Store `newhash' in place of the old hash, remembering it was
+ *         // created with bcrypt_hashpw_sha512.
+ *     }
  *
  */
 

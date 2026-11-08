@@ -12,6 +12,8 @@
  * <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 #include <string.h>
+#include <stdint.h>
+#include <stdlib.h>
 #include <unistd.h>
 #include <limits.h>
 
@@ -24,6 +26,22 @@
 #define RANDBYTES (16)
 #define BYTES_IN_512BITS (64)
 #define BCRYPT_API __attribute__ ((visibility ("default")))
+
+/*
+ * Domain separation tags for the salted pre-hash functions. Changing them
+ * would make existing hashes impossible to verify.
+ */
+#define PREHASH_SHA512_TAG "libbcrypt-sha512-v1:"
+#define PREHASH_SHA3_512_TAG "libbcrypt-sha3-512-v1:"
+
+/* Position of the salt characters in a bcrypt salt or hash ("$2b$NN$..."). */
+#define SALT_OFFSET (7)
+#define SALT_LENGTH (22)
+
+enum prehash_alg {
+	PREHASH_SHA512,
+	PREHASH_SHA3_512
+};
 
 /*
  * This is a best effort implementation. Nothing prevents a compiler from
@@ -96,30 +114,113 @@ BCRYPT_API int bcrypt_checkpw(const char *passwd, const char *hash)
 	return timing_safe_strcmp(hash, outhash);
 }
 
-BCRYPT_API int bcrypt_sha512(const char *in, char digest[BCRYPT_512BITS_BASE64_SIZE])
+/*
+ * Calculates the base64 representation of the SHA-512 or SHA3-512 digest of
+ * the given data. Returns zero on success and nonzero otherwise.
+ */
+static int prehash(enum prehash_alg alg, const void *in, size_t len,
+		   char digest[BCRYPT_512BITS_BASE64_SIZE])
 {
 	unsigned char bindigest[BYTES_IN_512BITS];
-	size_t len = strlen(in);
 
-	if (len > ULONG_MAX)
-		return 1;
+	if (alg == PREHASH_SHA512) {
+		if (len > ULONG_MAX)
+			return 1;
+		bcrypt_sha512_calc(in, (unsigned long)len, (char *)bindigest);
+	} else {
+		if (len > ULLONG_MAX)
+			return 1;
+		bcrypt_sha3_512_calc((const u8 *)in, (u64)len, bindigest);
+	}
 
-	bcrypt_sha512_calc(in, (unsigned long)len, (char *)bindigest);
 	bcrypt_base64_calc(bindigest, sizeof(bindigest), digest);
 	explicit_bzero(bindigest, sizeof(bindigest));
 	return 0;
 }
 
-BCRYPT_API int bcrypt_sha3_512(const char *in, char digest[BCRYPT_512BITS_BASE64_SIZE])
+/*
+ * Pre-hashes the password together with a domain separation tag and the salt
+ * characters, and hashes the base64 digest with bcrypt using the same salt.
+ * Returns zero on success and nonzero otherwise.
+ */
+static int hashpw_prehash(enum prehash_alg alg, const char *passwd,
+			  const char *salt, char hash[BCRYPT_HASHSIZE])
 {
-	unsigned char bindigest[BYTES_IN_512BITS];
-	size_t len = strlen(in);
+	const char *tag;
+	size_t taglen;
+	size_t pwlen;
+	size_t total;
+	char *buf;
+	char digest[BCRYPT_512BITS_BASE64_SIZE];
+	int ret;
 
-	if(len > ULLONG_MAX)
+	if (strlen(salt) < SALT_OFFSET + SALT_LENGTH || salt[0] != '$' ||
+	    salt[1] != '2' || salt[3] != '$' || salt[6] != '$')
 		return 1;
 
-	bcrypt_sha3_512_calc((const u8 *)in, (u64)len, bindigest);
-	bcrypt_base64_calc(bindigest, sizeof(bindigest), digest);
-	explicit_bzero(bindigest, sizeof(bindigest));
-	return 0;
+	tag = (alg == PREHASH_SHA512)?PREHASH_SHA512_TAG:PREHASH_SHA3_512_TAG;
+	taglen = strlen(tag);
+	pwlen = strlen(passwd);
+	if (pwlen > SIZE_MAX - taglen - SALT_LENGTH)
+		return 1;
+
+	total = taglen + SALT_LENGTH + pwlen;
+	buf = malloc(total);
+	if (buf == NULL)
+		return 1;
+
+	memcpy(buf, tag, taglen);
+	memcpy(buf + taglen, salt + SALT_OFFSET, SALT_LENGTH);
+	memcpy(buf + taglen + SALT_LENGTH, passwd, pwlen);
+	ret = prehash(alg, buf, total, digest);
+	explicit_bzero(buf, total);
+	free(buf);
+
+	if (ret == 0)
+		ret = bcrypt_hashpw(digest, salt, hash);
+	explicit_bzero(digest, sizeof(digest));
+	return ret;
+}
+
+static int checkpw_prehash(enum prehash_alg alg, const char *passwd,
+			   const char *hash)
+{
+	char outhash[BCRYPT_HASHSIZE];
+
+	if (hashpw_prehash(alg, passwd, hash, outhash) != 0)
+		return -1;
+
+	return timing_safe_strcmp(hash, outhash);
+}
+
+BCRYPT_API int bcrypt_hashpw_sha512(const char *passwd, const char *salt, char hash[BCRYPT_HASHSIZE])
+{
+	return hashpw_prehash(PREHASH_SHA512, passwd, salt, hash);
+}
+
+BCRYPT_API int bcrypt_checkpw_sha512(const char *passwd, const char *hash)
+{
+	return checkpw_prehash(PREHASH_SHA512, passwd, hash);
+}
+
+BCRYPT_API int bcrypt_hashpw_sha3_512(const char *passwd, const char *salt, char hash[BCRYPT_HASHSIZE])
+{
+	return hashpw_prehash(PREHASH_SHA3_512, passwd, salt, hash);
+}
+
+BCRYPT_API int bcrypt_checkpw_sha3_512(const char *passwd, const char *hash)
+{
+	return checkpw_prehash(PREHASH_SHA3_512, passwd, hash);
+}
+
+/* Deprecated. */
+BCRYPT_API int bcrypt_sha512(const char *in, char digest[BCRYPT_512BITS_BASE64_SIZE])
+{
+	return prehash(PREHASH_SHA512, in, strlen(in), digest);
+}
+
+/* Deprecated. */
+BCRYPT_API int bcrypt_sha3_512(const char *in, char digest[BCRYPT_512BITS_BASE64_SIZE])
+{
+	return prehash(PREHASH_SHA3_512, in, strlen(in), digest);
 }

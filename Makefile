@@ -23,7 +23,7 @@ OBJCOPY = objcopy
 
 # Library version.
 BCRYPT_MAJOR = 1
-BCRYPT_MINOR = 0
+BCRYPT_MINOR = 1
 BCRYPT_PATCH = 0
 
 # Library files and variables.
@@ -36,7 +36,7 @@ BCRYPT_SOFILE = $(BCRYPT_SONAME).$(BCRYPT_MINOR).$(BCRYPT_PATCH)
 
 BCRYPT_MANPAGE = $(BCRYPT_BASENAME).3
 BCRYPT_MANPAGE_SOURCE = $(BCRYPT_MANPAGE).txt
-BCRYPT_MANPAGE_LINKS = $(BCRYPT_BASENAME)_gensalt.3 $(BCRYPT_BASENAME)_hashpw.3 $(BCRYPT_BASENAME)_checkpw.3 $(BCRYPT_BASENAME)_sha512.3 $(BCRYPT_BASENAME)_sha3_512.3
+BCRYPT_MANPAGE_LINKS = $(BCRYPT_BASENAME)_gensalt.3 $(BCRYPT_BASENAME)_hashpw.3 $(BCRYPT_BASENAME)_checkpw.3 $(BCRYPT_BASENAME)_sha512.3 $(BCRYPT_BASENAME)_sha3_512.3 $(BCRYPT_BASENAME)_hashpw_sha512.3 $(BCRYPT_BASENAME)_checkpw_sha512.3 $(BCRYPT_BASENAME)_hashpw_sha3_512.3 $(BCRYPT_BASENAME)_checkpw_sha3_512.3
 
 BCRYPT_HEADER = $(BCRYPT_BASENAME).h
 BCRYPT_PCFILE = $(BCRYPT_LIBNAME).pc
@@ -47,7 +47,7 @@ BCRYPT_OBJS = $(BCRYPT_BASENAME).o keccak.o base64.o sha512.o
 # not expose crypt_blowfish functions like crypt() that would clash with the
 # system ones. Keep this list in sync with bcrypt.h.
 BCRYPT_ALL_OBJ = $(BCRYPT_LIBNAME)_all.o
-BCRYPT_EXPORTS = bcrypt_gensalt bcrypt_hashpw bcrypt_checkpw bcrypt_sha512 bcrypt_sha3_512
+BCRYPT_EXPORTS = bcrypt_gensalt bcrypt_hashpw bcrypt_checkpw bcrypt_sha512 bcrypt_sha3_512 bcrypt_hashpw_sha512 bcrypt_checkpw_sha512 bcrypt_hashpw_sha3_512 bcrypt_checkpw_sha3_512
 
 # Installation variables.
 
