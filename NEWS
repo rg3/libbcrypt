@@ -1,0 +1,77 @@
+libbcrypt 1.1.0 (2026-11-08)
+============================
+
+This is the first tagged release. It is the version previously developed in
+the "future" branch, which becomes the main version. If you were using the
+"master" branch, read "Upgrading from the master branch" first.
+
+New features
+------------
+
+* bcrypt_hashpw_sha512, bcrypt_checkpw_sha512, bcrypt_hashpw_sha3_512 and
+  bcrypt_checkpw_sha3_512 hash and verify passwords using a salted SHA-512 or
+  SHA3-512 pre-hash. They take the whole password into account, avoiding the
+  72-byte limit of bcrypt, and are not vulnerable to password shucking. The
+  manpage documents how the pre-hash is calculated.
+
+* New hashes use the $2b$ prefix, which is the current standard. Existing
+  $2a$ hashes can still be verified.
+
+Deprecated
+----------
+
+* bcrypt_sha512 and bcrypt_sha3_512 are deprecated. This only affects users
+  of the old "future" branch, as these functions never existed in the
+  "master" branch. Their digest is not salted, so hashes created with them are
+  vulnerable to password shucking. They remain available to verify existing
+  hashes, and the manpage shows how to replace those hashes when users log in.
+  Using them produces a compiler warning. If you build with -Werror and still
+  need them, define BCRYPT_NO_DEPRECATION_WARNINGS before including bcrypt.h.
+
+Fixes
+-----
+
+* The static library no longer exports the internal crypt_blowfish functions,
+  like crypt(). Programs linked statically with it got a crypt() that only
+  supported bcrypt, instead of the system one.
+
+* The library builds on 32-bit ARM. Tested on x86-64, ARM64 and 32-bit ARM.
+
+* Passwords and password-derived data are cleared from memory after use.
+
+* The salt parameter of bcrypt_hashpw and the hash parameter of
+  bcrypt_checkpw are now declared as pointers, avoiding compiler warnings when
+  passing stored hashes. The ABI does not change.
+
+* Build fixes: header dependencies, LDFLAGS support, correct paths in the
+  pkg-config file, and better support for the BSDs and cross-compiling.
+
+* Documentation fixes: safer examples, the behavior of work factors above 31,
+  and typos.
+
+Upgrading from the master branch
+--------------------------------
+
+* The library is built as libbcrypt.so and libbcrypt.a instead of bcrypt.a,
+  and installed with "make install" together with a manpage and a pkg-config
+  file. The header is installed as bcrypt/bcrypt.h under the include
+  directory, so use "pkg-config --cflags --libs libbcrypt", or the
+  corresponding -I and -l flags. "make uninstall" removes the installed files.
+
+* Random bytes are obtained with getentropy() instead of reading /dev/urandom,
+  and sensitive data is cleared with explicit_bzero(). This requires glibc
+  2.25 or later. See the README for other systems.
+
+* bcrypt_gensalt, bcrypt_hashpw and bcrypt_checkpw keep their names and
+  behavior, and existing code compiles without changes. The only difference is
+  that bcrypt_gensalt now returns 1 or 2 on errors instead of values from 1 to
+  5. Only a nonzero value was ever documented.
+
+* The default work factor is available as BCRYPT_DEFAULT_WORK_FACTOR.
+
+Notes for long-time users
+-------------------------
+
+* Some hashes created with versions from 2011 to 2013 may no longer verify,
+  or may have weak salts. See the CAVEATS section of the manpage for the
+  affected cases and how to migrate them.
