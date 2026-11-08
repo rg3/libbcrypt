@@ -27,6 +27,9 @@ static void base64_block(const unsigned char *in, size_t len, char out[4])
 	/* Equal signs are used to indicate padding was applied. */
 	out[2] = ((len == 1)?'=':base64_table[index[2]]);
 	out[3] = ((len <= 2)?'=':base64_table[index[3]]);
+
+	explicit_bzero(padded_in, sizeof(padded_in));
+	explicit_bzero(index, sizeof(index));
 }
 
 void bcrypt_base64_calc(const unsigned char *in, size_t len, char *out)

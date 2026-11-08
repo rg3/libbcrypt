@@ -7,6 +7,8 @@
  * remains.
  */
 
+#include <string.h>
+
 #include "keccak.h"
 
 static void Keccak(ui r, ui c, const u8 *in, u64 inLen, u8 sfx, u8 *out, u64 outLen);
@@ -41,4 +43,5 @@ static void Keccak(ui r, ui c, const u8 *in, u64 inLen, u8 sfx, u8 *out, u64 out
     /*absorb*/ while(inLen>0) { b=(inLen<R)?inLen:R; FOR(i,b) s[i]^=in[i]; in+=b; inLen-=b; if (b==R) { KeccakF1600(s); b=0; } }
     /*pad*/ s[b]^=sfx; if((sfx&0x80)&&(b==(R-1))) KeccakF1600(s); s[R-1]^=0x80; KeccakF1600(s);
     /*squeeze*/ while(outLen>0) { b=(outLen<R)?outLen:R; FOR(i,b) out[i]=s[i]; out+=b; outLen-=b; if(outLen>0) KeccakF1600(s); }
+    /*wipe*/ explicit_bzero(s, sizeof(s));
 }

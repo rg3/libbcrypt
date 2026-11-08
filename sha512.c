@@ -108,6 +108,7 @@ static void processblock(struct sha512 *s, const uint8_t *buf)
         s->h[5] += f;
         s->h[6] += g;
         s->h[7] += h;
+        explicit_bzero(W, sizeof(W));
 }
 
 static void pad(struct sha512 *s)
@@ -191,5 +192,6 @@ void bcrypt_sha512_calc(const void *in, unsigned long len, char *sum)
 	if (len > 0UL)
 		sha512_update(&s, in, len);
 	sha512_sum(&s, (uint8_t *)sum);
+	explicit_bzero(&s, sizeof(s));
 }
 

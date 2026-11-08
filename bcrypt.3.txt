@@ -71,6 +71,8 @@ SHA-512 digest of the password _passwd_. This digest can be used as a
 replacement for the password itself to overcome the character limit of the
 bcrypt implementation. Please see the *CAVEATS* and *EXAMPLES* sections for more
 details.
+The digest can be used in place of the password, so it is just as sensitive.
+Clear it after use, for example with _explicit_bzero_(3).
 
 The function _bcrypt_sha3_512_ is identical to the previous one but uses
 SHA3-512 instead of SHA-512.
@@ -218,6 +220,7 @@ if (ret != 0) {
 }
 
 ret = bcrypt_hashpw(digest, salt, hash);
+explicit_bzero(digest, sizeof(digest));
 if (ret != 0) {
     // Handle another error here.
 }
@@ -241,6 +244,7 @@ if (ret != 0) {
 }
 
 ret = bcrypt_checkpw(digest, hash);
+explicit_bzero(digest, sizeof(digest));
 if (ret == -1) {
     // Handle another error here.
 }

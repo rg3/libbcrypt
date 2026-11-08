@@ -76,6 +76,9 @@ int bcrypt_checkpw(const char *passwd, const char hash[BCRYPT_HASHSIZE]);
  * hash of the given password and output the result as the base64
  * representation of the digest.
  *
+ * The digest can be used in place of the password, so it is just as
+ * sensitive. Clear it after use, for example with explicit_bzero.
+ *
  * It will return zero if no problems were encountered and nonzero otherwise.
  */
 int bcrypt_sha512(const char *passwd,
@@ -147,6 +150,7 @@ int bcrypt_sha3_512(const char *passwd,
  *     }
  *
  *     ret = bcrypt_hashpw(digest, salt, hash);
+ *     explicit_bzero(digest, sizeof(digest));
  *     if (ret != 0) {
  *         // Handle another error here.
  *     }
@@ -168,6 +172,7 @@ int bcrypt_sha3_512(const char *passwd,
  *     }
  *
  *     ret = bcrypt_checkpw(digest, hash);
+ *     explicit_bzero(digest, sizeof(digest));
  *     if (ret == -1) {
  *         // Handle another error here.
  *     }
