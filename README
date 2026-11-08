@@ -1,8 +1,11 @@
 This library is a simple wrapper providing a convenient reentrant interface for
 the bcrypt password hashing algorithm implementation as provided by Solar
 Designer at http://www.openwall.com/crypt/. An exact copy of that source code
-is included in the crypt_blowfish subdirectory. The library should build and
-work in most Linux distributions and probably OpenBSD.
+is included in the crypt_blowfish subdirectory.
+
+The library builds and works on Linux with glibc 2.25 or later. It should also
+work on Linux with musl 1.1.20 or later, FreeBSD and OpenBSD, but this has not
+been tested. macOS and Windows are not supported.
 
 The provided C interface is inspired in the bcrypt Python module that can be
 found at https://pypi.python.org/pypi/bcrypt/, and consists of a function to

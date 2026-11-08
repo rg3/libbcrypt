@@ -2,7 +2,9 @@ Installing from source requires asciidoc (for a2x), probably DocBook DTD files,
 GNU Make, GCC or a compatible compiler (like Clang), and the ar, ld and objcopy
 tools (from GNU binutils, LLVM or your system). "make" is usually GNU Make in
 desktop Linux distributions, but you may have to call it as "gmake" in other
-systems, like the BSDs. Quick guide:
+systems, like the BSDs. The C library must provide getentropy() and
+explicit_bzero(), and the build uses ELF shared library conventions. Quick
+guide:
 
 make
 make test
