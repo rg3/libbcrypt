@@ -34,6 +34,11 @@ Only needed in the installation step:
 
 * DESTDIR for a base installation path, empty by default.
 
+When cross-compiling, set CC, AR and OBJCOPY to the tools for the target
+system, for example:
+
+make CC=aarch64-linux-gnu-gcc AR=aarch64-linux-gnu-ar OBJCOPY=aarch64-linux-gnu-objcopy
+
 You could also set CFLAGS but, by default, the ones provided by Solar Designer
 at crypt_blowfish/Makefile are used. Personally, I recommend to keep them as
 they are.

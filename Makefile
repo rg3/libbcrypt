@@ -1,7 +1,5 @@
 # Solar Designer implementation.
 CRYPT_BLOWFISH_DIR = crypt_blowfish
-CRYPT_BLOWFISH_SRC = $(sort $(wildcard $(CRYPT_BLOWFISH_DIR)/*.[cS]))
-CRYPT_BLOWFISH_OBJ = $(patsubst %.S,%.o,$(CRYPT_BLOWFISH_SRC:%.c=%.o))
 CRYPT_BLOWFISH_LIB = $(CRYPT_BLOWFISH_DIR)/$(CRYPT_BLOWFISH_DIR).a
 
 # Compiler. Use the one from crypt_blowfish (gcc) if available, falling back to
@@ -12,6 +10,15 @@ CC := $(if $(shell command -v $(CRYPT_BLOWFISH_CC) 2>/dev/null),$(CRYPT_BLOWFISH
 # Compiler flags.
 CFLAGS = $(shell grep '^CFLAGS = ' $(CRYPT_BLOWFISH_DIR)/Makefile | cut -d= -f2-)
 override CFLAGS += -fPIC -fvisibility=hidden
+
+# crypt_blowfish objects. x86.S only has code for 32-bit x86, and it fails to
+# assemble on some other architectures, like 32-bit ARM, so it is only built
+# when targeting 32-bit x86. The object list is passed to crypt_blowfish's
+# Makefile, which is used without modifications.
+CRYPT_BLOWFISH_I386 := $(strip $(shell echo __i386__ | $(CC) $(CFLAGS) -x c -E -P - 2>/dev/null))
+CRYPT_BLOWFISH_BF_OBJS = crypt_blowfish.o $(if $(filter 1,$(CRYPT_BLOWFISH_I386)),x86.o)
+CRYPT_BLOWFISH_OBJ = $(addprefix $(CRYPT_BLOWFISH_DIR)/,$(CRYPT_BLOWFISH_BF_OBJS) crypt_gensalt.o wrapper.o)
+CRYPT_BLOWFISH_MAKE = $(MAKE) CC="$(CC)" CFLAGS="$(CFLAGS)" BLOWFISH_OBJS="$(CRYPT_BLOWFISH_BF_OBJS)" -C $(CRYPT_BLOWFISH_DIR)
 
 # Linker flags, empty by default.
 LDFLAGS =
@@ -95,7 +102,7 @@ all: $(BCRYPT_SOFILE) $(BCRYPT_LAFILE) $(BCRYPT_MANPAGE) $(BCRYPT_PCFILE) $(BCRY
 .PHONY: test
 test: $(BCRYPT_BASENAME)_test
 	@set -e ; \
-	    $(MAKE) CC="$(CC)" CFLAGS="$(CFLAGS)" -C $(CRYPT_BLOWFISH_DIR) check check_threads ; \
+	    $(CRYPT_BLOWFISH_MAKE) check check_threads ; \
 	    for prog in $^; do \
 	        ./$$prog ; \
 	    done
@@ -121,8 +128,8 @@ FORCE:
 # The archive is only used as a timestamp to know if crypt_blowfish changed.
 $(CRYPT_BLOWFISH_LIB): FORCE
 	@set -e ; \
-	    $(MAKE) -q CC="$(CC)" CFLAGS="$(CFLAGS)" -C $(CRYPT_BLOWFISH_DIR) || \
-	    ( $(MAKE) CC="$(CC)" CFLAGS="$(CFLAGS)" -C $(CRYPT_BLOWFISH_DIR) && \
+	    $(CRYPT_BLOWFISH_MAKE) -q || \
+	    ( $(CRYPT_BLOWFISH_MAKE) && \
 	      rm -f $@ && $(AR) $(ARFLAGS) $@ $(CRYPT_BLOWFISH_OBJ) )
 
 # Header dependencies.
@@ -148,7 +155,7 @@ $(BCRYPT_PCFILE): FORCE
 	      echo "Cflags: -I$(INCLUDESUBDIR)" ; \
 	      echo "Libs: -L$(LIBDIR) -l$(BCRYPT_BASENAME)" ; \
 	    } >$@.tmp ; \
-	    if cmp -s $@.tmp $@ ; then rm -f $@.tmp ; else mv -f $@.tmp $@ ; fi
+	    if [ -f $@ ] && [ "$$(cat $@)" = "$$(cat $@.tmp)" ] ; then rm -f $@.tmp ; else mv -f $@.tmp $@ ; fi
 
 .PHONY: clean
 clean:

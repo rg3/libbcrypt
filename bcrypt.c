@@ -124,12 +124,16 @@ static int prehash(enum prehash_alg alg, const void *in, size_t len,
 	unsigned char bindigest[BYTES_IN_512BITS];
 
 	if (alg == PREHASH_SHA512) {
+#if SIZE_MAX > ULONG_MAX
 		if (len > ULONG_MAX)
 			return 1;
+#endif
 		bcrypt_sha512_calc(in, (unsigned long)len, (char *)bindigest);
 	} else {
+#if SIZE_MAX > ULLONG_MAX
 		if (len > ULLONG_MAX)
 			return 1;
+#endif
 		bcrypt_sha3_512_calc((const u8 *)in, (u64)len, bindigest);
 	}
 
