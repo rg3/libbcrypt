@@ -102,9 +102,9 @@ int bcrypt_checkpw(const char *passwd, const char *hash);
  * are taken as they appear in the generated hash: bcrypt normalizes the last
  * one, which only carries 2 bits, to '.', 'O', 'e' or 'u'. The base64
  * representation of the pre-hash is then hashed with bcrypt using the same
- * salt. Including the
- * salt makes the pre-hash unique to each hash, so leaked unsalted hashes of the
- * same password from other systems cannot be used against it.
+ * salt. Including the salt makes the pre-hash unique to each hash, so leaked
+ * unsalted hashes of the same password from other systems cannot be used
+ * against it.
  *
  * The generated hashes look like regular bcrypt hashes, so you need to keep
  * track of which function was used to create each one, and verify it with the

@@ -70,9 +70,8 @@ The function _bcrypt_hashpw_ expects a password to be hashed (_passwd_), a
 _salt_ to hash the password with, generated with _bcrypt_gensalt_ and a char
 array to leave the result (_hash_). The salt is a null-terminated string, and
 the output hash argument must point to a buffer with, at least,
-BCRYPT_HASHSIZE bytes in capacity. It can
-also be used to verify passwords, but it is easier to use _bcrypt_checkpw_ for
-that specific purpose.
+BCRYPT_HASHSIZE bytes in capacity. It can also be used to verify passwords, but
+it is easier to use _bcrypt_checkpw_ for that specific purpose.
 
 The function _bcrypt_checkpw_ expects a password (_passwd_) and a _hash_ to
 verify the password against, allowing you to see if the password matches a
